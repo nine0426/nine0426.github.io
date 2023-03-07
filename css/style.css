@@ -4,15 +4,15 @@ body{
     font-size: 18px;
 
     line-height: 1.35em;
-    margin: 1cm 10cm;
+    margin: 1cm 12cm;
 }
 
 .title {
     color: rgb(98, 182, 221);
     background-color: rgb(211, 221, 230);
-    line-height: 6em;
+    line-height: 3em;
 }
 
 img{
-    margin: 0cm 2cm;
+    margin: 0cm 0.5cm;
 }
