@@ -5,6 +5,7 @@ body{
 
     line-height: 1.35em;
     margin: 1cm 12cm;
+    border: 5px darkblue;
 }
 
 .title {
