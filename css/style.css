@@ -1,4 +1,4 @@
-body{
+body {
     background-color: white;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-size: 18px;
@@ -11,13 +11,14 @@ body{
     color: rgb(98, 182, 221);
     background-color: rgb(211, 221, 230);
     line-height: 3.5em;
+    margin-bottom: 1.5em;
 }
 
-img{
+img {
     margin: 0cm 0.5cm;
 }
 
-.ps{
-    font-size: 10;
-    font-family: "宋体", sans-serif;
+.ps {
+    font-size: 14px;
+    text-align: center;
 }
