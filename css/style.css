@@ -2,13 +2,17 @@ body{
     background-color: white;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-size: 18px;
+
+    line-height: 1.35em;
+    margin: 1cm 10cm;
 }
 
 .title {
     color: rgb(98, 182, 221);
     background-color: rgb(211, 221, 230);
+    line-height: 6em;
 }
 
 img{
-    margin: auto;
+    margin: 0cm 2cm;
 }
