@@ -16,3 +16,8 @@ body{
 img{
     margin: 0cm 0.5cm;
 }
+
+.ps{
+    font-size: 10;
+    font-family: "宋体", sans-serif;
+}
