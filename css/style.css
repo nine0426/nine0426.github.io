@@ -1,10 +1,14 @@
 .title {
-    width: 80%;
+    width: 20%;
     margin: auto;
     color: rgb(98, 182, 221);
     background-color: rgb(211, 221, 230);
 }
 
 p{
+    margin-left: 20;
+}
+
+img{
     margin: auto;
 }
