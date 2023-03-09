@@ -24,39 +24,38 @@ img {
     margin-top: 100px;
     font-size: 15px;
     text-align: center;
-    padding: 20px, double;
 }
 
-a{
+a {
     text-decoration: none;
     color: rgba(86, 124, 173, 0.863);
 }
 
-a:hover{
+a:hover {
     color: rgb(45, 97, 238);
 }
 
-a:visited{
+a:visited {
     color: rgba(86, 124, 173, 0.863);
 }
 
-.block{
-    float:left;
+.block {
+    float: left;
     width: 25%;
-    border-left: 12px solid rgb(202, 187, 216);
+    min-width: 25%;
+    border-left: 15px solid rgb(202, 187, 216);
     box-sizing: border-box;
 }
 
 .end {
-    width: 100%;
-    margin-top: 100px;
+    margin-top: 500px;
 }
 
-.bigblock{
-    float:left;
-    margin: 0 25px 10px;
+.bigblock {
+    float: left;
+    margin: 10px 0 10px;
 }
 
-hr{
-    color: rgb(202, 187, 216);;
+hr {
+    color: rgb(202, 187, 216);
 }
