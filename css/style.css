@@ -42,13 +42,13 @@ a:visited {
 .block {
     float: left;
     width: 25%;
-    min-width: 25%;
+    min-width: 350px;
     border-left: 15px solid rgb(202, 187, 216);
     box-sizing: border-box;
 }
 
 .end {
-    margin-top: 500px;
+    margin-top: 600px;
 }
 
 .bigblock {
