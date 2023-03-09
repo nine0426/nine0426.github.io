@@ -39,21 +39,20 @@ a:visited {
     color: rgba(86, 124, 173, 0.863);
 }
 
-.block {
+.block{
     float: left;
     width: 25%;
-    min-width: 350px;
     border-left: 15px solid rgb(202, 187, 216);
     box-sizing: border-box;
 }
 
+
 .end {
-    margin-top: 600px;
+    margin-top: 500px;
 }
 
 .bigblock {
-    float: left;
-    margin: 10px 0 10px;
+    margin: 10px 20px 10px;
 }
 
 hr {
