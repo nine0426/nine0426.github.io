@@ -1,8 +1,7 @@
 body {
     background-image: url(../img/arona.png);
-    background-size: contain;
+    background-size: 100%;
     padding: 30px;
-    
 
     font-size: 20px;
 
