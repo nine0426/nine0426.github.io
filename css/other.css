@@ -1,0 +1,23 @@
+a {
+    text-decoration: none;
+    color: rgba(86, 124, 173, 0.863);
+}
+
+a:hover {
+    color: rgb(45, 97, 238);
+}
+
+a:visited {
+    color: rgba(86, 124, 173, 0.863);
+}
+
+body {
+    background-image: url(../img/arona2.png);
+    background-size: 100%;
+    padding: 30px;
+
+    font-size: 20px;
+
+    line-height: 1.6em;
+    margin: 0.5cm 1cm;
+}
