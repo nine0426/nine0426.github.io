@@ -21,6 +21,10 @@ body {
     padding: 5px;
 }
 
+p{
+    font-size: 15px;
+}
+
 .ps {
     margin-top: 50px;
     font-size: 15px;
@@ -41,6 +45,6 @@ a:visited {
 }
 
 .block {
-    margin-top: 30px;
+    margin-top: 100px;
     border-left: 15px solid rgb(202, 187, 216);
 }
