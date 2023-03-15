@@ -1,0 +1,21 @@
+body {
+    background-image: url(../img/background/marona.jpg);
+    background-size: 100%;
+    padding: 30px;
+    opacity: 0.8;
+
+    font-size: 18px;
+
+    line-height: 1.6em;
+    margin: 0.5cm 1cm;
+}
+
+.tips{
+    font-size: 30px;
+}
+
+.end {
+    margin-top: 600px;
+    font-size: 15px;
+    text-align: center;
+}
