@@ -21,7 +21,7 @@ body {
     padding: 5px;
 }
 
-p{
+.tips{
     font-size: 15px;
 }
 
@@ -45,6 +45,6 @@ a:visited {
 }
 
 .block {
-    margin-top: 100px;
+    margin-bottom: 100px;
     border-left: 15px solid rgb(202, 187, 216);
 }
