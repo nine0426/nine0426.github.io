@@ -4,12 +4,42 @@ body {
     padding: 30px;
     opacity: 0.8;
 
-    font-size: 25px;
+    font-size: 30px;
 
     line-height: 1.6em;
     margin: 0.5cm 1cm;
 }
 
+button {
+    border-radius: 10px;
+    background: linear-gradient(to right, #8ce2f1, #108cd4);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: bold;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+}
+
+#top_buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.submit-btn {
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
 
 .title {
     color: rgb(98, 182, 221);

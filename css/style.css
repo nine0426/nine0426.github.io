@@ -54,14 +54,6 @@ button:hover {
     cursor: pointer;
 }
 
-nav {
-    background-color: #333;
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 20px;
-}
-
 /*title*/
 .title {
     color: rgb(98, 182, 221);
