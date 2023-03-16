@@ -8,6 +8,7 @@ body {
     line-height: 1.6em;
     margin: 0.5cm 1cm;
 }
+
 /*按钮美化*/
 button {
     border-radius: 10px;
@@ -52,6 +53,15 @@ button:hover {
     cursor: pointer;
 }
 
+nav {
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+}
+
+/*title*/
 .title {
     color: rgb(98, 182, 221);
     background-color: rgb(211, 221, 230);
