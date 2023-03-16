@@ -1,5 +1,5 @@
 const xhr = new XMLHttpRequest();
-xhr.open('GET', 'data.json');
+xhr.open('GET', '/json/uptime.json');
 xhr.responseType = 'json';
 xhr.onload = () => {
   if (xhr.status === 200) {
