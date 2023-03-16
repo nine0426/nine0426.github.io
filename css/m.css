@@ -25,13 +25,13 @@ button:hover {
 
 #top_buttons {
     position: absolute;
-    top: 10px;
+    top: 100px;
     right: 10px;
 }
 
 .submit-btn {
-    font-size: 25px;
-  padding: 20px 35px;
+    font-size: 30px;
+    padding: 25px 40px;
     border: none;
     color: white;
     text-align: center;
