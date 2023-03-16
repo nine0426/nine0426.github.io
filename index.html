@@ -16,8 +16,12 @@
             </div>
 
             <img class="boki" src="./img/title.png" alt="图片正在加载" width="200">
-            <hr>
+            <div class="topbottom">
+                <a href="./pages/staticlogin.html"><button class="login-btn">登录</button></a>
+                <a href="./pages/form.html"><button class="submit-btn">提交表单</button></a>
+            </div>
 
+            <hr>
             <div class="bigblock">
                 <div class="block">
                     <h2>使用搜索引擎</h2>
@@ -38,7 +42,7 @@
                     <p><a href="./apps/Clash.for.Windows-0.20.17-win.7z" download>点此下载</a> Clash for Windows<a
                             href="./apps/app.7z" download> 汉化</a></p>
                     <p><a href="./apps/cfa.apk" download>点此下载</a> Clash for Android</p>
-                    <p><a href="./study.html">点此查看</a> 使用教程<a href="./jd.html"> More</a></p>
+                    <p><a href="./pages/study.html">点此查看</a> 使用教程<a href="./pages/jd.html"> More</a></p>
                 </div>
 
                 <div class="block">
@@ -57,7 +61,7 @@
                 <div class="block">
                     <h2>相关下载</h2>
                     <p><a href="./apps/Bandicam.rar" download>点此下载</a> Bandicam 破解版</p>
-                    <p><a href="./picacg.html">点此下载</a> 哔咔漫画</p>
+                    <p><a href="./apps/picacg.apk" download">点此下载</a> 哔咔漫画</p>
                     <p><a href="./apps/谷歌框架安装器.apk" download>点此下载</a> 安卓谷歌框架安装器</p>
                     <p><a href="./apps/HPMA进度检查.xlsx" download>点此下载</a> HPMA进度检查 v230314</p>
                     <p><a href="./apps/ContextMenuManager.NET.4.0.exe" download>点此下载</a> 鼠标右键菜单管理</p>
@@ -68,24 +72,18 @@
             <div class="end">
                 <hr>
                 <p> </p>
-                <h3><a href="./pay.html">点此</a> 向我付钱</h3>
+                <h3><a href="./pages/pay.html">点此</a> 向我付钱</h3>
                 <hr>
                 <div class="ps">
                     <p>如果以上链接不可用，请检查你的网络环境</p>
-                    <p>Last updated: <span id="last-updated"></span></p>
-                    <p>----更新时间2023/3/15----</p>
+                    <p>网站更新时间 <span id="last-updated"></span></p>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="./js/jump.js"></script>
-    <script>fetch('./uptime.json')
-            .then(response => response.json())
-            .then(data => {
-                const lastUpdated = data.lastUpdated;
-                document.getElementById('last-updated').textContent = lastUpdated;
-            });</script>
+    <script src="./js/uptime.js"></script>
 </body>
 
 
