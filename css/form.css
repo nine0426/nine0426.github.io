@@ -1,0 +1,58 @@
+.feedback-form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.form-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #06F;
+    box-shadow: 0px 0px 5px #06F;
+}
+
+.form-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #06F;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.form-btn:hover {
+    background-color: #0080FF;
+}
+
+#message {
+    height: 150px;
+    /* 设置文本区域高度为150px */
+    resize: none;
+    /* 禁用拖动调整大小功能 */
+}
