@@ -29,9 +29,21 @@ button:hover {
     right: 10px;
 }
 
-.submit-btn {
+.btn {
     font-size: 35px;
     padding: 18px 25px;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+.btn1 {
+    font-size: 25px;
+    padding: 10px 10px;
     border: none;
     color: white;
     text-align: center;
