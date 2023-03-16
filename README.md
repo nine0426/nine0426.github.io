@@ -4,7 +4,9 @@
 
 ## 如何使用
 
-你可以直接访问我的Github Pages的托管网页[点这里进入](https://nine0426.github.io/)
+你可以直接访问我的Github Pages的托管网页
+
+[点这里进入](https://nine0426.github.io/)
 
 ## 请不要直接复制我的项目！
 
