@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title>静态登录页面</title>
 	<meta charset="UTF-8">
+	<link href="../img/title.png" rel="icon" type="image/x-ico">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style>
 		body {
@@ -14,7 +16,8 @@
 			border: 3px solid #f1f1f1;
 		}
 
-		input[type=text], input[type=password] {
+		input[type=text],
+		input[type=password] {
 			width: 100%;
 			padding: 12px 20px;
 			margin: 8px 0;
@@ -31,9 +34,16 @@
 			border: none;
 			cursor: pointer;
 			width: 100%;
+			border-radius: 10px;
+			background: linear-gradient(to right, #8ce2f1, #108cd4);
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+			font-family: "Helvetica Neue", sans-serif;
+			font-weight: bold;
 		}
 
 		button:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
 			opacity: 0.8;
 		}
 
@@ -60,6 +70,7 @@
 			<input type="password" placeholder="请输入密码" name="psw" id="psw" required>
 
 			<button type="button" onclick="login()">登录</button>
+			<a href="../index.html"><button type="button">返回主页</button></a>
 		</div>
 	</form>
 
@@ -79,4 +90,5 @@
 		}
 	</script>
 </body>
+
 </html>

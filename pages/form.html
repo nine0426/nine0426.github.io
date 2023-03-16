@@ -2,36 +2,109 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <link href="./img/title.png" rel="icon" type="image/x-ico">
-    <link rel="stylesheet" href="./css/form.css">
-    <title>向我提供建议</title>
+  <meta charset="utf-8">
+  <link href="../img/title.png" rel="icon" type="image/x-ico">
+  <link rel="stylesheet" href="../css/form.css">
+  <style>
+    .feedback-form {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 30px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .form-title {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #06F;
+      box-shadow: 0px 0px 5px #06F;
+    }
+
+    .form-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #06F;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .form-btn:hover {
+      background-color: #0080FF;
+    }
+
+    button {
+      border-radius: 10px;
+      background: linear-gradient(to right, #8ce2f1, #108cd4);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      font-family: "Helvetica Neue", sans-serif;
+      font-weight: bold;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    #message {
+      height: 150px;
+      /* 设置文本区域高度为150px */
+      resize: none;
+      /* 禁用拖动调整大小功能 */
+    }
+  </style>
+  <title>向我提供建议</title>
 </head>
 
 <body>
   <form action="https://formspree.io/f/meqwzddr" method="POST" class="feedback-form">
     <h2 class="form-title">说些什么？</h2>
-  
+
     <div class="form-group">
       <label for="name" class="form-label">昵称（我该如何称呼你）</label>
       <input type="text" id="name" name="name" class="form-control" required>
     </div>
-  
+
     <div class="form-group">
       <label for="email" class="form-label">你的邮箱：</label>
       <input type="email" id="email" name="email" class="form-control" required>
     </div>
-  
+
     <div class="form-group">
       <label for="subject" class="form-label">主题：</label>
       <input type="text" id="subject" name="_subject" class="form-control" required>
     </div>
-  
+
     <div class="form-group">
       <label for="message" class="form-label">详细内容：</label>
       <textarea id="message" name="message" class="form-control" required></textarea>
     </div>
-  
+
     <button type="submit" class="form-btn">提交</button>
   </form>
 </body>
