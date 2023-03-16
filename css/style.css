@@ -1,6 +1,7 @@
 /*整体*/
 body {
     background-image: url(../img/background/arona.png);
+    background-color: rgba(255, 255, 255, 1);
     background-size: 100%;
     padding: 30px;
     font-size: 20px;
@@ -64,12 +65,18 @@ nav {
 /*title*/
 .title {
     color: rgb(98, 182, 221);
-    background-color: rgb(211, 221, 230);
-    line-height: 2.5em;
-    margin-bottom: 1.5em;
     text-align: center;
-
     padding: 5px;
+}
+
+.title h1 {
+    font-size: 3.5rem;
+    color: #fff;
+    background: linear-gradient(to right, #34bcfc, #4444ff);
+    padding: 1rem 10rem;
+    border-radius: 1rem;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .boki {
@@ -99,16 +106,20 @@ a:visited {
     float: left;
     width: 25%;
     margin-top: 20px;
-    border-left: 15px solid rgb(202, 187, 216);
+    border-left: 15px solid rgb(168, 224, 250);
     box-sizing: border-box;
 }
 
-
+.line::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: #ccc;
+}
 .end {
     margin-top: 500px;
 }
 
 .bigblock {
     margin: 10px 20px 10px;
-    opacity: 1.5;
 }

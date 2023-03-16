@@ -13,16 +13,18 @@ body {
 
 .title {
     color: rgb(98, 182, 221);
-    background-color: rgb(211, 221, 230);
-    line-height: 2.5em;
-    margin-bottom: 1.5em;
     text-align: center;
-
     padding: 5px;
 }
 
-.tips{
-    font-size: 15px;
+.title h1 {
+    font-size: 3.5rem;
+    color: #fff;
+    background: linear-gradient(to right, #34bcfc, #4444ff);
+    padding: 1rem 10rem;
+    border-radius: 1rem;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .ps {
@@ -46,5 +48,5 @@ a:visited {
 
 .block {
     margin-bottom: 110px;
-    border-left: 15px solid rgb(202, 187, 216);
+    border-left: 15px solid rgb(168, 224, 250);
 }
