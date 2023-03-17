@@ -3,6 +3,7 @@ body {
     background-image: url(../img/background/arona.png);
     background-color: rgba(255, 255, 255, 1);
     background-size: 100%;
+    font-family: "微软雅黑", "Microsoft YaHei", "SimSun", sans-serif;
     padding: 30px;
     font-size: 20px;
 
@@ -59,8 +60,13 @@ button:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.boki {
+.pages-photo {
     margin: 0 0.5cm;
+    border-radius: 100%;
+}
+
+.pages-photo:hover {
+    opacity: 0.8;
 }
 
 .ps {
@@ -75,13 +81,9 @@ a {
 }
 
 a:hover {
-    color: rgb(45, 97, 238);
+    color: rgb(88, 133, 255);
+    text-decoration: underline;
 }
-
-a:visited {
-    color: rgba(86, 124, 173, 0.863);
-}
-
 .block {
     float: left;
     width: 25%;
@@ -95,6 +97,11 @@ a:visited {
     display: block;
     height: 1px;
     background-color: #ccc;
+}
+
+.block:hover {
+    border-color: #29c6fa;
+    background-color: rgba(211, 217, 252, 0.6)
 }
 
 .end {
