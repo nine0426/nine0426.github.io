@@ -6,7 +6,7 @@
     <link href="./img/title.png" rel="icon" type="image/x-ico">
     <style>
         body {
-            background-image: url(http://rrpc9f1h1.hd-bkt.clouddn.com/wx_warning.png);
+            background-image: url(./img/wx_warning.png);
             background-size: 100%;
             padding: 30px;
         }
@@ -39,9 +39,10 @@
         var ua = navigator.userAgent.toLowerCase();
         if (ua.match(/MicroMessenger/i) == "micromessenger") {
             console.log("hh")
-        } else if(/ipad|iphone|midp|rv:1.2.3.4|ucweb|android|windows ce|windows mobile/.test(device)) {
+        } else {
+            if(/ipad|iphone|midp|rv:1.2.3.4|ucweb|android|windows ce|windows mobile/.test(device)) {
             window.location = window.location.href.replace('https://nine0426.github.io/wx.html', 'https://nine0426.github.io/');
-            
+            }
         }
     </script>
 </body>
