@@ -85,6 +85,12 @@ a:hover {
     color: rgb(88, 133, 255);
     text-decoration: underline;
 }
+.line::after {
+    content: "";
+    display: block;
+    height: 1px;
+    background-color: #ccc;
+}
 
 .block {
     float: left;
@@ -94,12 +100,7 @@ a:hover {
     box-sizing: border-box;
 }
 
-.line::after {
-    content: "";
-    display: block;
-    height: 1px;
-    background-color: #ccc;
-}
+
 
 .block:hover {
     border-color: #29c6fa;
