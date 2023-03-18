@@ -1,3 +1,15 @@
+body {
+    background-image: url(../img/background/arona2.png);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    font-size: 20px;
+
+    line-height: 1.6em;
+    margin: 0.5cm 1cm;
+}
+
 a {
     text-decoration: none;
     color: rgba(86, 124, 173, 0.863);
@@ -9,18 +21,6 @@ a:hover {
 
 a:visited {
     color: rgba(86, 124, 173, 0.863);
-}
-
-body {
-    background-image: url(http://rrpc9f1h1.hd-bkt.clouddn.com/arona2.png);
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-
-    font-size: 20px;
-
-    line-height: 1.6em;
-    margin: 0.5cm 1cm;
 }
 
 button {
