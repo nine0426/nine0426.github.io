@@ -4,7 +4,7 @@ body {
     padding: 30px;
     opacity: 0.8;
 
-    font-size: 20px;
+    font-size: 24px;
 
     line-height: 1.6em;
     margin: 0.5cm 1cm;
@@ -42,7 +42,7 @@ button:hover {
 }
 
 .btn1 {
-    font-size: 30px;
+    font-size: 25px;
     padding: 15px 15px;
     border: none;
     color: white;
