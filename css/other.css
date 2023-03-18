@@ -1,6 +1,6 @@
 body {
     background-image: url(../img/background/arona2.png);
-    
+
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -44,4 +44,43 @@ button {
 button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+}
+
+
+input[type="file"] {
+    border-radius: 10px;
+    background: linear-gradient(to right, #8ce2f1, #108cd4);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    padding: 15px 25px;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+input[type="file"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    color: rgb(98, 182, 221);
+    text-align: center;
+    padding: 5px;
+}
+
+.title h1 {
+    font-size: 3.5rem;
+    color: #fff;
+    background: linear-gradient(to right, #34bcfc, #4444ff);
+    padding: 1rem 10rem;
+    border-radius: 1rem;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }

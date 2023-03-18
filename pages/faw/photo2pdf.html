@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Images to PDF</title>
+    <script src="../js/pdf.js"></script>
+
+  </head>
+  <body>
+    <input type="file" id="fileInput" multiple>
+    <button onclick="convertToPdf()">转换为PDF</button>
+    <br><br>
+    <div id="previewImages"></div>
+    <script>
+      const fileInput = document.getElementById("fileInput");
+      const previewImages = document.getElementById("previewImages");
+
+      fileInput.addEventListener("change", function() {
+        previewImages.innerHTML = "";
+        for (let i = 0; i < fileInput.files.length; i++) {
+          const file = fileInput.files[i];
+          const imageType = /^image\//;
+          if (!imageType.test(file.type)) {
+            continue;
+          }
+          const img = document.createElement("img");
+          img.classList.add("preview-image");
+          img.file = file;
+          previewImages.appendChild(img);
+          const reader = new FileReader();
+          reader.onload = (function(aImg) {
+            return function(e) {
+              aImg.src = e.target.result;
+            };
+          })(img);
+          reader.readAsDataURL(file);
+        }
+      });
+
+      function convertToPdf() {
+        const pdf = new jsPDF();
+        const previewImageElements = document.querySelectorAll(".preview-image");
+        for (let i = 0; i < previewImageElements.length; i++) {
+          const imgDataUrl = previewImageElements[i].src;
+          pdf.addImage(imgDataUrl, "JPEG", 10, 10);
+          if (i !== previewImageElements.length - 1) {
+            pdf.addPage();
+          }
+        }
+        pdf.save("converted_images.pdf");
+      }
+    </script>
+  </body>
+</html>
