@@ -1,8 +1,9 @@
 /*整体*/
 body {
     background-image: url(http://rrpc9f1h1.hd-bkt.clouddn.com/arona.png);
-    background-color: rgba(255, 255, 255, 1);
-    background-size: 100%;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     font-family: "微软雅黑", "Microsoft YaHei", "SimSun", sans-serif;
     padding: 30px;
     font-size: 20px;
@@ -84,6 +85,7 @@ a:hover {
     color: rgb(88, 133, 255);
     text-decoration: underline;
 }
+
 .block {
     float: left;
     width: 25%;

@@ -1,9 +1,8 @@
 body {
     background-image: url(http://rrpc9f1h1.hd-bkt.clouddn.com/marona.jpg);
-    background-size: 100%;
-    padding: 30px;
-    opacity: 0.8;
-
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     font-size: 24px;
 
     line-height: 1.6em;
