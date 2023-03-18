@@ -1,5 +1,5 @@
 body {
-    background-image: url(../img/background/marona.jpg);
+    background-image: url(https://i0.hdslb.com/bfs/article/e6de902c01fa41963873aee78d75f88361a4068f.jpg);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -24,7 +24,7 @@ button:hover {
 
 #top_buttons {
     position: absolute;
-    top: 90px;
+    top: 55px;
     right: 10px;
 }
 
@@ -41,7 +41,7 @@ button:hover {
 }
 
 .btn1 {
-    font-size: 25px;
+    font-size: 35px;
     padding: 15px 15px;
     border: none;
     color: white;
@@ -88,6 +88,6 @@ a:visited {
 }
 
 .block {
-    margin-bottom: 110px;
+    margin-bottom: 80px;
     border-left: 15px solid rgb(168, 224, 250);
 }
