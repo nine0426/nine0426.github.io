@@ -12,7 +12,7 @@ a:visited {
 }
 
 body {
-    background-image: url(../img/background/arona2.png);
+    background-image: url(http://rrpc9f1h1.hd-bkt.clouddn.com/arona2.png);
     background-size: 100%;
     padding: 30px;
 
@@ -20,4 +20,26 @@ body {
 
     line-height: 1.6em;
     margin: 0.5cm 1cm;
+}
+
+button {
+    border-radius: 10px;
+    background: linear-gradient(to right, #8ce2f1, #108cd4);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: "Helvetica Neue", sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    padding: 15px 25px;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
 }
