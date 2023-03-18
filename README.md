@@ -17,6 +17,7 @@
 特别感谢以下项目和资源：
 - [GitHub Pages](https://pages.github.com/)
 - [Form Spree](https://formspree.io/)
+- [Bilibili](https://www.bilibili.com/)
 
 ## 联系方式
 
