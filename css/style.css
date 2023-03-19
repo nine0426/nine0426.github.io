@@ -36,11 +36,12 @@ button:hover {
     position: absolute;
     top: 10px;
     right: 10px;
-  }
+}
+
 .btn {
     border: none;
     color: white;
-    padding: 15px 32px;
+    padding: 12px 27px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
@@ -75,11 +76,7 @@ button:hover {
     opacity: 0.8;
 }
 
-.ps {
-    margin-top: 50px;
-    font-size: 15px;
-    text-align: center;
-}
+
 
 a {
     text-decoration: none;
@@ -90,6 +87,7 @@ a:hover {
     color: rgb(88, 133, 255);
     text-decoration: underline;
 }
+
 .line::after {
     content: "";
     display: block;
@@ -103,13 +101,19 @@ a:hover {
     margin-top: 20px;
     border-left: 15px solid rgb(168, 224, 250);
     box-sizing: border-box;
+    padding-left: 10px;
+    border-radius: 10px;
 }
 
 
 
 .block:hover {
     border-color: #29c6fa;
-    background-color: rgba(211, 217, 252, 0.6)
+    background-color: rgba(211, 217, 252, 0.6);
+    border-radius: 10px;
+    box-shadow: 0px -5px 10px rgba(0, 0, 0, 0.2);
+    padding-top: 5px;
+    cursor: pointer;
 }
 
 .end {
@@ -118,4 +122,33 @@ a:hover {
 
 .bigblock {
     margin: 10px 20px 10px;
+}
+
+#footer {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+.ps {
+    margin-top: 50px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ps p {
+    margin: 10px 0;
+}
+
+#footer {
+    margin-top: 30px;
+}
+
+#footer p {
+    color: #666;
+    font-size: 12px;
 }
