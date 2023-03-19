@@ -5,6 +5,8 @@
   <meta charset="utf-8">
   <link href="../img/title.png" rel="icon" type="image/x-ico">
   <link rel="stylesheet" href="../css/other.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/valine/dist/Valine.min.css">
+  <script src="//cdn.jsdelivr.net/npm/valine/dist/Valine.min.js"></script>
   <style>
     .title {
       color: rgb(98, 182, 221);
@@ -95,7 +97,6 @@
       background-color: rgba(255, 255, 255, 0.8);
     }
   </style>
-  <script src='../js/form.js'></script>
   <title>向我提供建议</title>
 </head>
 
@@ -128,7 +129,7 @@
 
     <button type="submit" class="form-btn">提交</button>
   </form>
-  <div class="title">
+  <!--<div class="title">
     <h1>或者你可以在这里留下评论</h1>
   </div>
   <div id="vcomments"></div>
@@ -139,13 +140,9 @@
       appKey: 'K7CN4UXZYyLgmmM4qijEhqHf',
       avatar_force: false,
       placeholder: '请输入评论内容',
-      avatar: mp, // 去除评论者的头像显示
-      recordIP: false, // 关闭记录评论者的 IP 地址
-      enableQQ: true, //QQ 登录功能
-      enableMail: false, // 关闭邮箱登录功能
-      serverURLs: false,
     })
   </script>
+  /-->
 </body>
 
 
