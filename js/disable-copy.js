@@ -6,6 +6,7 @@ document.addEventListener('dragstart', function(event) {
   event.preventDefault();
 });
 
+// 禁止复制
 document.addEventListener('copy', function(e) {
   e.preventDefault();
   alert("禁止复制！");

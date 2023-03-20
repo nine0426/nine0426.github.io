@@ -95,3 +95,12 @@ a:visited {
 .block:hover {
     border-color: #29c6fa;
 }
+
+#footer {
+    margin-top: 30px;
+}
+
+#footer p {
+    color: #666;
+    font-size: 12px;
+}
