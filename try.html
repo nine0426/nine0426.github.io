@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>文字上浮下落示例</title>
+    <style>
+      .floating {
+        position: relative;
+        animation: float 2s ease-in-out infinite;
+      }
+      
+      @keyframes float {
+        0% {
+          top: 0;
+        }
+        50% {
+          top: -10px;
+        }
+        100% {
+          top: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <p class="floating">文字</p>
+  </body>
+</html>
