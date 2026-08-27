@@ -27,4 +27,18 @@ document.addEventListener("DOMContentLoaded", () => {
             window.setTimeout(() => { button.innerHTML = original; if (window.lucide) window.lucide.createIcons({ nodes: [button] }); }, 1800);
         });
     });
+    const heroSide = document.querySelector(".hero-side");
+    if (heroSide && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        heroSide.addEventListener("pointermove", (event) => {
+            const bounds = heroSide.getBoundingClientRect();
+            const x = (event.clientX - bounds.left) / bounds.width - .5;
+            const y = (event.clientY - bounds.top) / bounds.height - .5;
+            heroSide.style.setProperty("--tilt-x", `${(y * -4).toFixed(2)}deg`);
+            heroSide.style.setProperty("--tilt-y", `${(x * 4).toFixed(2)}deg`);
+        });
+        heroSide.addEventListener("pointerleave", () => {
+            heroSide.style.setProperty("--tilt-x", "0deg");
+            heroSide.style.setProperty("--tilt-y", "0deg");
+        });
+    }
 });
