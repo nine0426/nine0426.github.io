@@ -1,0 +1,15 @@
+.toolbox-band .section-tag{color:var(--muted)}
+.band-note{max-width:300px;color:var(--muted);font-size:14px;line-height:1.8}
+.personal-tools{padding:125px clamp(24px,11vw,190px);display:grid;grid-template-columns:minmax(250px,.65fr) minmax(460px,1.35fr);gap:clamp(45px,9vw,145px);border-bottom:1px solid var(--line)}
+.personal-tools-heading h2{margin:0;font:800 clamp(47px,5vw,75px)/.94 "Noto Sans SC",sans-serif}
+.personal-tools-heading h2 em{font-family:"Playfair Display",serif;font-weight:700;color:var(--orange)}
+.personal-tool-list{border-top:1px solid var(--ink)}
+.personal-tool-list a{min-height:105px;padding:14px 0;display:grid;grid-template-columns:140px 1fr 24px;grid-template-rows:auto auto;align-content:center;gap:6px 16px;border-bottom:1px solid var(--line);transition:padding .2s ease,background .2s ease}
+.personal-tool-list a:hover{padding:14px 16px;background:var(--orange)}
+.personal-tool-list .tool-type{grid-row:1 / span 2;align-self:start;padding-top:3px;color:var(--muted);font:500 10px "DM Mono",monospace}
+.personal-tool-list .tool-type.online{color:#3f7c2c}
+.personal-tool-list strong{font-size:16px}
+.personal-tool-list small{color:var(--muted);font-size:12px}
+.personal-tool-list b{grid-column:3;grid-row:1 / span 2;align-self:center;font-size:19px;color:var(--orange)}
+.personal-tool-list a:hover .tool-type,.personal-tool-list a:hover small{color:#5b2f26}
+@media(max-width:800px){.personal-tools{grid-template-columns:1fr;padding-top:85px;padding-bottom:85px}.personal-tool-list a{grid-template-columns:120px 1fr 20px}.personal-tool-list small{font-size:11px}}
