@@ -3,71 +3,61 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#101817">
-    <meta name="description" content="nine0426 的个人站点，提供下载、在线工具与常用入口。">
-    <title>nine0426 | Personal launchpad</title>
+    <meta name="theme-color" content="#f4f0e8">
+    <meta name="description" content="nine0426 的个人网站，提供资源下载、在线工具与常用入口。">
+    <title>nine0426 — personal index</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700;900&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;800;900&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <div class="page-noise" aria-hidden="true"></div>
-    <header class="site-header">
-        <a class="brand" href="#top" aria-label="nine0426 首页"><span class="brand-mark">N/</span><span>nine0426</span></a>
-        <nav class="site-nav" aria-label="站内导航">
-            <a href="#downloads">下载</a><a href="#toolbox">工具</a><a href="#recommend">推荐</a><a href="./pages/staticlogin.html">登录</a>
+    <header class="masthead">
+        <a class="wordmark" href="#top"><span>n/</span> nine0426</a>
+        <nav class="utility-nav" aria-label="个人链接">
+            <a href="https://space.bilibili.com/230141337" target="_blank" rel="noopener noreferrer">Bilibili <sup>↗</sup></a>
+            <button class="copy-qq" type="button" data-qq="1016802678">QQ <sup>⧉</sup></button>
+            <a href="./pages/staticlogin.html">登录 <sup>↗</sup></a>
         </nav>
     </header>
     <main id="top">
-        <section class="hero" aria-labelledby="hero-title">
+        <section class="hero">
             <div class="hero-copy">
-                <p class="eyebrow"><span></span> PERSONAL LAUNCHPAD / 2026</p>
-                <h1 id="hero-title">你好，我是<br><em>nine0426.</em></h1>
-                <p class="hero-intro">一个收集实用资源、好用工具与数字日常的个人站点。少一点无效跳转，多一点可以马上用上的东西。</p>
-                <div class="hero-actions">
-                    <a class="button button-primary" href="https://space.bilibili.com/230141337" target="_blank" rel="noopener noreferrer"><i data-lucide="play"></i> 访问 Bilibili</a>
-                    <a class="button button-outline" href="https://wpa.qq.com/msgrd?v=3&uin=1016802678&site=qq&menu=yes" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle"></i> QQ 联系我</a>
-                </div>
+                <p class="kicker"><span class="live-dot"></span> ONLINE / PERSONAL INDEX</p>
+                <h1>把有用的<br><i>留在这里。</i></h1>
+                <p class="hero-description">你好，我是 nine0426。这里是我的个人入口：一些软件、一些工具，还有我想分享给你的东西。</p>
+                <a class="scroll-cue" href="#downloads"><span>向下浏览</span><b>↓</b></a>
             </div>
-            <div class="signal-composition" aria-label="个人站点信息展示">
-                <div class="sun-disc"></div><div class="signal-line signal-line-one"></div><div class="signal-line signal-line-two"></div>
-                <div class="signal-stamp">NINE<br>0426</div><div class="coordinate coordinate-a">35.8617 N</div><div class="coordinate coordinate-b">104.1954 E</div><div class="signal-note"><span>01</span> KEEP<br>EXPLORING</div>
+            <div class="hero-art" aria-label="nine0426 个人信息图">
+                <div class="art-circle"></div><div class="art-ring"></div><div class="art-cross art-cross-one"></div><div class="art-cross art-cross-two"></div>
+                <div class="art-name">NINE<br><em>0426</em></div><div class="art-caption">EST. 2022<br>KEEP IT USEFUL</div><div class="art-index">A / 01</div>
             </div>
         </section>
-        <section class="quick-strip" aria-label="快捷入口">
-            <a href="#downloads"><i data-lucide="download"></i><span>资源下载</span><b>01</b></a>
-            <a href="#toolbox"><i data-lucide="sparkles"></i><span>在线工具</span><b>02</b></a>
-            <a href="https://space.bilibili.com/230141337" target="_blank" rel="noopener noreferrer"><i data-lucide="circle-play"></i><span>视频空间</span><b>03</b></a>
-            <button class="copy-qq" type="button" data-qq="1016802678"><i data-lucide="copy"></i><span>复制 QQ</span><b>04</b></button>
-        </section>
-        <section id="downloads" class="section-block downloads-section" aria-labelledby="downloads-title">
-            <div class="section-heading"><p class="section-index">01 / DOWNLOADS</p><h2 id="downloads-title">拿走你需要的<br>工具与资源。</h2><p>常用软件的直接下载入口。下载前请确认设备与系统版本。</p></div>
-            <div class="download-list">
-                <a class="download-row" href="./apps/fq/Clash.for.Windows-0.20.17-win.7z" download><span class="download-number">01</span><span class="download-name">Clash for Windows</span><span class="download-meta">Windows / 7z</span><i data-lucide="arrow-down-right"></i></a>
-                <a class="download-row" href="./apps/fq/cfa.apk" download><span class="download-number">02</span><span class="download-name">Clash for Android</span><span class="download-meta">Android / APK</span><i data-lucide="arrow-down-right"></i></a>
-                <a class="download-row" href="./apps/Bandicam.rar" download><span class="download-number">03</span><span class="download-name">Bandicam</span><span class="download-meta">Windows / RAR</span><i data-lucide="arrow-down-right"></i></a>
-                <a class="download-row" href="./apps/ContextMenuManager.NET.4.0.exe" download><span class="download-number">04</span><span class="download-name">ContextMenuManager</span><span class="download-meta">Windows / EXE</span><i data-lucide="arrow-down-right"></i></a>
-                <a class="download-row is-external" href="./pages/quickpages.html"><span class="download-number">05</span><span class="download-name">快速下载通道</span><span class="download-meta">更多镜像与资源</span><i data-lucide="arrow-up-right"></i></a>
+        <section class="intro-line"><p>一个轻量的个人导航页</p><p>下载资源 / 在线工具 / 外部入口</p><p class="intro-line-right">SCROLL TO EXPLORE <span>↘</span></p></section>
+        <section id="downloads" class="download-band">
+            <div class="band-heading"><p class="section-tag">01 — DOWNLOADS</p><h2>直接<br><em>拿走。</em></h2><p>常用软件的下载入口，按设备选择即可。</p></div>
+            <div class="download-directory">
+                <a class="directory-row" href="./apps/fq/Clash.for.Windows-0.20.17-win.7z" download><span class="row-no">01</span><strong>Clash for Windows</strong><small>WINDOWS · 7Z</small><b>↓</b></a>
+                <a class="directory-row" href="./apps/fq/cfa.apk" download><span class="row-no">02</span><strong>Clash for Android</strong><small>ANDROID · APK</small><b>↓</b></a>
+                <a class="directory-row" href="./apps/Bandicam.rar" download><span class="row-no">03</span><strong>Bandicam</strong><small>WINDOWS · RAR</small><b>↓</b></a>
+                <a class="directory-row" href="./apps/ContextMenuManager.NET.4.0.exe" download><span class="row-no">04</span><strong>ContextMenuManager</strong><small>WINDOWS · EXE</small><b>↓</b></a>
+                <a class="directory-row directory-more" href="./pages/quickpages.html"><span class="row-no">05</span><strong>快速下载通道</strong><small>备用镜像与更多资源</small><b>↗</b></a>
             </div>
         </section>
-        <section id="toolbox" class="section-block toolbox-section" aria-labelledby="toolbox-title">
-            <div class="section-heading compact"><p class="section-index">02 / ONLINE TOOLBOX</p><h2 id="toolbox-title">打开就能用的<br>在线工具。</h2></div>
-            <div class="tool-grid">
-                <a class="tool-item tool-featured" href="https://translate.google.com.hk/?hl=zh-CN" target="_blank" rel="noopener noreferrer"><i data-lucide="languages"></i><span>Google Translate</span><small>即时翻译</small><b>↗</b></a>
-                <a class="tool-item" href="https://www.speedtest.cn/" target="_blank" rel="noopener noreferrer"><i data-lucide="gauge"></i><span>Speedtest</span><small>网络测速</small><b>↗</b></a>
-                <a class="tool-item" href="https://steamdb.info/" target="_blank" rel="noopener noreferrer"><i data-lucide="gamepad-2"></i><span>SteamDB</span><small>游戏数据</small><b>↗</b></a>
-                <a class="tool-item" href="https://www.xe.com/zh-CN/currencyconverter/" target="_blank" rel="noopener noreferrer"><i data-lucide="badge-dollar-sign"></i><span>XE Currency</span><small>汇率换算</small><b>↗</b></a>
-                <a class="tool-item" href="http://www.lsjgcx.com/" target="_blank" rel="noopener noreferrer"><i data-lucide="chart-no-axes-combined"></i><span>历史价格</span><small>价格查询</small><b>↗</b></a>
-                <a class="tool-item" href="https://www.uptodown.com/" target="_blank" rel="noopener noreferrer"><i data-lucide="boxes"></i><span>Uptodown</span><small>应用下载</small><b>↗</b></a>
+        <section id="toolbox" class="toolbox-band">
+            <div class="toolbox-heading"><p class="section-tag">02 — TOOLBOX</p><h2>打开即用的<br><em>小工具。</em></h2></div>
+            <div class="tool-directory">
+                <a href="https://translate.google.com.hk/?hl=zh-CN" target="_blank" rel="noopener noreferrer"><span>01</span><strong>Google Translate</strong><small>翻译</small><b>↗</b></a>
+                <a href="https://www.speedtest.cn/" target="_blank" rel="noopener noreferrer"><span>02</span><strong>Speedtest</strong><small>网络测速</small><b>↗</b></a>
+                <a href="https://steamdb.info/" target="_blank" rel="noopener noreferrer"><span>03</span><strong>SteamDB</strong><small>游戏数据</small><b>↗</b></a>
+                <a href="https://www.xe.com/zh-CN/currencyconverter/" target="_blank" rel="noopener noreferrer"><span>04</span><strong>XE Currency</strong><small>汇率换算</small><b>↗</b></a>
+                <a href="http://www.lsjgcx.com/" target="_blank" rel="noopener noreferrer"><span>05</span><strong>历史价格查询</strong><small>价格查询</small><b>↗</b></a>
+                <a href="https://www.uptodown.com/" target="_blank" rel="noopener noreferrer"><span>06</span><strong>Uptodown</strong><small>应用下载</small><b>↗</b></a>
             </div>
         </section>
-        <section id="recommend" class="recommend-section" aria-labelledby="recommend-title">
-            <div class="recommend-mark">03</div><div><p class="section-index">RECOMMENDED SERVICE</p><h2 id="recommend-title">Taffy Cloud</h2><p>按量计费的代理服务选择。根据自己的网络需求，按需使用。</p></div>
-            <a class="button button-dark" href="https://tf233.top/#/login?type=reg&affcode=PgA9KJ4b" target="_blank" rel="noopener noreferrer">查看 Taffy Cloud <i data-lucide="arrow-up-right"></i></a>
-        </section>
+        <section id="recommend" class="taffy-feature"><div class="taffy-mark">03</div><div class="taffy-copy"><p class="section-tag">RECOMMENDED / 按量计费</p><h2>Taffy Cloud</h2><p>按需使用的网络服务，适合希望控制用量的你。</p></div><a href="https://hasucn.me/i/PgA9KJ4b" target="_blank" rel="noopener noreferrer" class="taffy-link">前往了解 <span>↗</span></a></section>
     </main>
-    <footer class="site-footer"><div><span class="brand-mark">N/</span> nine0426</div><p>Personal launchpad. Built for useful links.</p><button class="copy-qq footer-qq" type="button" data-qq="1016802678">QQ: 1016802678 <i data-lucide="copy"></i></button></footer>
-    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script><script src="./js/site.js"></script>
+    <footer class="footer"><div><span>n/</span> nine0426</div><p>Made for useful things.</p><button class="copy-qq footer-qq" type="button" data-qq="1016802678">QQ 1016802678 <span>⧉</span></button></footer>
+    <script src="./js/site.js"></script>
 </body>
 </html>
