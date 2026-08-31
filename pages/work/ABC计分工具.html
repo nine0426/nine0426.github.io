@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ABC4.0计分工具</title>
+  <style>
+    :root{--bg:#f6f8fb;--card:#ffffff;--accent:#4f46e5;--muted:#6b7280}
+    body{font-family: "Segoe UI", Roboto, "Noto Sans SC", Arial, sans-serif;background:linear-gradient(180deg,#eef2ff 0%,var(--bg) 100%);margin:0;padding:24px;color:#111}
+    .wrap{max-width:980px;margin:24px auto;background:var(--card);border-radius:12px;padding:22px 26px;box-shadow:0 6px 30px rgba(16,24,40,0.08)}
+    h1{margin:0 0 6px;font-size:20px;color:#0f172a}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+    .panel{background:#fff;border-radius:10px;padding:14px;border:1px solid rgba(15,23,42,0.04)}
+    .section{margin-bottom:16px}
+    .section h3{font-size:14px;margin:0 0 8px}
+    .btn-group{display:flex;flex-wrap:wrap;gap:8px}
+    .choice{padding:8px 12px;border-radius:8px;border:1px solid #d1d5db;background:#fff;cursor:pointer;font-size:14px}
+    .choice.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .small{font-size:13px;color:var(--muted)}
+    .score-box{display:flex;flex-direction:column;gap:10px}
+    .result{font-weight:600;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+    .btns{display:flex;gap:8px;margin-top:12px}
+    button{border:0;padding:10px 14px;border-radius:9px;font-weight:600;cursor:pointer}
+    .ghost{background:transparent;border:1px solid #dbeafe;color:var(--accent)}
+    .breakdown{margin-top:10px;padding:10px;border-radius:8px;background:#fbfdff;border:1px dashed rgba(79,70,229,0.08)}
+    .flex{display:flex;justify-content:space-between;align-items:center}
+    .examples{margin-top:16px;padding:10px;border-radius:8px;background:#f9fafb;border:1px solid #e5e7eb}
+    .examples h4{margin:0 0 8px;font-size:14px}
+    .examples div{font-size:13px;margin-bottom:4px}
+    footer{margin-top:14px;font-size:13px;color:var(--muted)}
+    .green{color:green;font-weight:600}
+    .yellow{color:orange;font-weight:600}
+    .blue{color:blue;font-weight:600}
+    .red{color:red;font-weight:600}
+    @media(max-width:760px){.grid{grid-template-columns:1fr;}.wrap{padding:16px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>ABC 4.0计分工具</h1>
+    <p class="lead">四个板块分别选择评级，结果将在全部选择后显示。闲时要性可选“不评估”，将从总分中进行剔除后再计算。</p>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="section">
+          <h3>1. 门店基本面（满分 10）</h3>
+          <div class="btn-group" data-id="s1">
+            <div class="choice" data-val="A+">A+</div>
+            <div class="choice" data-val="A">A</div>
+            <div class="choice" data-val="B">B</div>
+            <div class="choice" data-val="C">C</div>
+            <div class="choice" data-val="C-">C-</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>2. 团队氛围（满分 25）</h3>
+          <div class="btn-group" data-id="s2">
+            <div class="choice" data-val="A+">A+</div>
+            <div class="choice" data-val="A">A</div>
+            <div class="choice" data-val="B">B</div>
+            <div class="choice" data-val="C">C</div>
+            <div class="choice" data-val="C-">C-</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>3. 顾客进店到离店（满分 40）</h3>
+          <div class="btn-group" data-id="s3">
+            <div class="choice" data-val="A+">A+</div>
+            <div class="choice" data-val="A">A</div>
+            <div class="choice" data-val="B">B</div>
+            <div class="choice" data-val="C">C</div>
+            <div class="choice" data-val="C-">C-</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>4. 闲时要性（满分 25）</h3>
+          <div class="btn-group" data-id="s4">
+            <div class="choice" data-val="A+">A+</div>
+            <div class="choice" data-val="A">A</div>
+            <div class="choice" data-val="B">B</div>
+            <div class="choice" data-val="C">C</div>
+            <div class="choice" data-val="C-">C-</div>
+            <div class="choice" data-val="NA">不评估</div>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="ghost" id="resetBtn">重置</button>
+        </div>
+
+        <div class="breakdown" id="breakdown" aria-live="polite" style="display:none">
+          <div class="small">分项明细</div>
+          <div id="detailList"></div>
+        </div>
+
+      </div>
+
+      <div class="panel score-box">
+        <div>
+          <div class="muted">总得分</div>
+          <div class="result" id="totalScore">—</div>
+        </div>
+        <div>
+          <div class="muted">得分率</div>
+          <div class="result" id="percent">—</div>
+        </div>
+        <div class="muted">提示：当“闲时要性”选为“不评估”时，该项满分将从总分中剔除，计算按剩余项的满分比例。</div>
+
+        <div class="examples">
+          <h4>常见评级得分率</h4>
+          <div id="exampleList"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>示例：若四个维度分别为 A, A, B, 不评估，则总得分为 52，得分率为 69.33%。</footer>
+  </div>
+
+  <script>
+    const rates = {"A+":1.0,"A":0.8,"B":0.6,"C":0.3,"C-":0.1};
+    const maxPoints = [10,25,40,25];
+
+    function getSelected(id){
+      const group=document.querySelector(`.btn-group[data-id="${id}"]`);
+      const active=group.querySelector('.choice.active');
+      return active?active.dataset.val:null;
+    }
+
+    function calc(){
+      const selections=[getSelected('s1'),getSelected('s2'),getSelected('s3'),getSelected('s4')];
+      if(selections.includes(null)){
+        document.getElementById('totalScore').textContent='—';
+        document.getElementById('percent').textContent='—';
+        document.getElementById('breakdown').style.display='none';
+        return;
+      }
+      let total=0, possible=0;
+      const details=[];
+      for(let i=0;i<4;i++){
+        if(i===3 && selections[i]==='NA'){
+          details.push({name:["门店基本面","团队氛围","顾客进店到离店","闲时要性"][i]+"（已不评估）",score:null,max:maxPoints[i],rate:null});
+          continue;
+        }
+        const rate=rates[selections[i]]||0;
+        const score=Number((maxPoints[i]*rate).toFixed(2));
+        total += score;
+        possible += maxPoints[i];
+        details.push({name:["门店基本面","团队氛围","顾客进店到离店","闲时要性"][i],score:score,max:maxPoints[i],rate:rate});
+      }
+      if(selections[3]==='NA') possible = maxPoints[0]+maxPoints[1]+maxPoints[2];
+      const totalRounded=Math.round(total*100)/100;
+      const percent=possible>0?Math.round((totalRounded/possible*10000))/100:0;
+      document.getElementById('totalScore').textContent=totalRounded;
+      const percentEl=document.getElementById('percent');
+      let cls='', label='';
+      if(percent>=80){cls='green'; label='优秀'}
+      else if(percent>=70){cls='yellow'; label='良好'}
+      else if(percent>=60){cls='blue'; label='合格'}
+      else{cls='red'; label='不合格'}
+      percentEl.innerHTML=`<span class='${cls}'>${percent.toFixed(2)}% (${label})</span>`;
+
+      const detailList=document.getElementById('detailList');
+      detailList.innerHTML='';
+      details.forEach(d=>{
+        const div=document.createElement('div');
+        if(d.score===null){div.innerHTML=`<div class="flex"><div class="small">${d.name}</div><div class="small">已剔除</div></div>`}
+        else{div.innerHTML=`<div class="flex"><div class="small">${d.name}</div><div class="small">${d.score} / ${d.max} （${(d.rate*100).toFixed(0)}%）</div></div>`}
+        detailList.appendChild(div);
+      });
+      document.getElementById('breakdown').style.display='block';
+    }
+
+    document.getElementById('resetBtn').addEventListener('click',()=>{
+      document.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+      document.getElementById('totalScore').textContent='—';
+      document.getElementById('percent').textContent='—';
+      document.getElementById('breakdown').style.display='none';
+    });
+
+    document.querySelectorAll('.choice').forEach(choice=>{
+      choice.addEventListener('click',()=>{
+        const group=choice.parentElement;
+        group.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+        choice.classList.add('active');
+        calc();
+      });
+    });
+
+    const commonCombos=["AAA","ABA","AAB","ABB","ABAA","AABA","BABA","ABBA","ABBB","AAAC","ABBC"];
+
+    function calcExample(combo){
+      const letters=combo.replace(/[^A-Z\+C-]/g,'').split('');
+      const values=[];
+      for(let i=0;i<letters.length;i++){
+        if(letters[i]==="A") values.push(0.8);
+        else if(letters[i]==="B") values.push(0.6);
+        else if(letters[i]==="C") values.push(0.3);
+      }
+      let total=0, possible=0;
+      for(let i=0;i<values.length;i++){
+        total+=maxPoints[i]*values[i];
+        possible+=maxPoints[i];
+      }
+      return (total/possible*100).toFixed(2);
+    }
+
+    function showExamples(){
+      const container=document.getElementById('exampleList');
+      container.innerHTML='';
+      commonCombos.forEach(c=>{
+        const percent=calcExample(c);
+        let cls='', label='';
+        const p=parseFloat(percent);
+        if(p>=80){cls='green'; label='优秀'}
+        else if(p>=70){cls='yellow'; label='良好'}
+        else if(p>=60){cls='blue'; label='合格'}
+        else{cls='red'; label='不合格'}
+        const div=document.createElement('div');
+        div.innerHTML=`<span class='${cls}'>${c} → ${percent}% (${label})</span>`;
+        container.appendChild(div);
+      });
+    }
+    showExamples();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表格拆分工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        h1 i {
+            font-size: 32px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .status-bar {
+            display: none;
+            background-color: #e8f4ff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4b6cb7;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status-bar.active {
+            display: flex;
+        }
+        
+        .status-icon {
+            font-size: 20px;
+            color: #4b6cb7;
+        }
+        
+        .status-text {
+            flex-grow: 1;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+        }
+        
+        .settings-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .settings-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .settings-column {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .preview-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4b6cb7;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #4b6cb7;
+        }
+        
+        .upload-area {
+            border: 2px dashed #a0b3e0;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            background-color: #f8faff;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .upload-area:hover {
+            border-color: #4b6cb7;
+            background-color: #f0f4ff;
+        }
+        
+        .upload-area i {
+            font-size: 42px;
+            color: #4b6cb7;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area h3 {
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 20px;
+        }
+        
+        .upload-area p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+        
+        #fileInput {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        select:focus, input:focus {
+            border-color: #4b6cb7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 108, 183, 0.2);
+        }
+        
+        /* 美化复选框 */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            color: #2c3e50;
+            padding: 10px 15px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s;
+        }
+        
+        .checkbox-container:hover {
+            background-color: #f0f4ff;
+            border-color: #c1d9f0;
+        }
+        
+        .checkbox-container input {
+            display: none;
+        }
+        
+        .custom-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #c1d9f0;
+            border-radius: 5px;
+            background-color: white;
+            position: relative;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .checkbox-container input:checked + .custom-checkbox {
+            background-color: #4b6cb7;
+            border-color: #4b6cb7;
+        }
+        
+        .custom-checkbox:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 11px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .checkbox-container input:checked + .custom-checkbox:after {
+            display: block;
+        }
+        
+        .checkbox-label {
+            font-weight: 600;
+            flex-grow: 1;
+        }
+        
+        .checkbox-help {
+            font-size: 13px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            background-color: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            border-left: 3px solid #4b6cb7;
+        }
+        
+        .help-text i {
+            color: #4b6cb7;
+            margin-right: 8px;
+        }
+        
+        .split-info {
+            background-color: #e8f4ff;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .split-info h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .split-info ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .split-info li {
+            padding: 12px 15px;
+            border-bottom: 1px dashed #c1d9f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+        }
+        
+        .split-info li:hover {
+            background-color: #d8e8ff;
+        }
+        
+        .split-info li:last-child {
+            border-bottom: none;
+        }
+        
+        .split-info .file-icon {
+            color: #28a745;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .split-info .master-icon {
+            color: #ff9800;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .file-count {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #e7f3ff;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            background-color: #4b6cb7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 250px;
+        }
+        
+        .btn:hover {
+            background-color: #3a5795;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 108, 183, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn:disabled:hover {
+            box-shadow: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(74, 108, 183, 0.2);
+            border-radius: 50%;
+            border-top: 4px solid #4b6cb7;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 30px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 36px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+        
+        .file-selected {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #e8f4ff;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .file-selected.active {
+            display: block;
+        }
+        
+        .stats-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #495057;
+            display: none;
+        }
+        
+        .stats-info.active {
+            display: block;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            background-color: #f9fafc;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
+            color: #721c24;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .error-message.active {
+            display: block;
+        }
+        
+        .row-count {
+            font-size: 12px;
+            color: #666;
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+        
+        .section-divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .settings-row {
+                flex-direction: column;
+            }
+            
+            .btn {
+                min-width: 100%;
+            }
+            
+            .upload-area {
+                padding: 30px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-file-excel"></i> 表格拆分工具</h1>
+            <p class="subtitle">根据指定列拆分Excel表格，支持自定义文件名前缀和后缀</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="status-bar" id="statusBar">
+                <i class="fas fa-info-circle status-icon"></i>
+                <div class="status-text" id="statusText">准备就绪</div>
+            </div>
+            
+            <div class="upload-section">
+                <h2 class="section-title"><i class="fas fa-upload"></i> 上传Excel文件</h2>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>点击或拖拽上传Excel文件</h3>
+                    <p>支持.xlsx, .xls格式</p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls">
+                </div>
+                <div class="file-selected" id="fileSelected">
+                    <i class="fas fa-file-excel"></i> 已选择文件: <span id="fileName">未选择文件</span>
+                </div>
+                <div class="stats-info" id="statsInfo">
+                    <div><i class="fas fa-info-circle"></i> 数据统计: <span id="rowCount">0</span> 行, <span id="colCount">0</span> 列</div>
+                </div>
+            </div>
+            
+            <div class="section-divider"></div>
+            
+            <div class="settings-section">
+                <div class="settings-row">
+                    <div class="settings-column">
+                        <h2 class="section-title"><i class="fas fa-cog"></i> 设置</h2>
+                        
+                        <div class="control-group">
+                            <label for="splitColumn"><i class="fas fa-columns"></i> 分表依据列</label>
+                            <select id="splitColumn" disabled>
+                                <option value="">请先上传Excel文件</option>
+                            </select>
+                            <div class="help-text">
+                                <i class="fas fa-info-circle"></i> 将根据此列的不同值拆分工作表。例如：如果选择"部门"列，系统会根据不同部门值创建多个分表。
+                            </div>
+                        </div>
+                        
+                        <div class="checkbox-container" id="keepMasterContainer">
+                            <input type="checkbox" id="keepMaster">
+                            <span class="custom-checkbox"></span>
+                            <div>
+                                <div class="checkbox-label">保留总表</div>
+                                <div class="checkbox-help">勾选后包含总表sheet，名称将使用原始文件名，不应用前后缀规则</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-column">
+                        <h2 class="section-title"><i class="fas fa-text-width"></i> 文件名</h2>
+                        
+                        <div class="control-group">
+                            <label for="prefix"><i class="fas fa-text-width"></i> 文件名前缀</label>
+                            <input type="text" id="prefix" placeholder="例如: 线上门店分店-">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle"></i> 将添加到每个分表文件名的开头。例如：如果前缀是"线上门店分店-"，分表文件名将为"线上门店分店-分表1.xlsx"。
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="suffix"><i class="fas fa-text-width"></i> 文件名后缀</label>
+                            <input type="text" id="suffix" placeholder="例如: -需稽核门店">
+                            <div class="help-text">
+                                <i class="fas fa-info-circle"></i> 将添加到每个分表文件名的末尾。例如：如果后缀是"-需稽核门店"，分表文件名将为"分表1-需稽核门店.xlsx"。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-divider"></div>
+            
+            <div class="preview-section">
+                <h2 class="section-title"><i class="fas fa-sitemap"></i> 拆分结果预览</h2>
+                <div class="error-message" id="errorMessage"></div>
+                <div class="split-info" id="splitInfo">
+                    <div class="empty-state">
+                        <i class="fas fa-table"></i>
+                        <p>上传Excel文件并选择分表列后，将在此处显示拆分结果</p>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p id="loadingText">正在处理数据，请稍候...</p>
+                </div>
+            </div>
+            
+            <div class="section-divider"></div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-success" id="downloadSheetsBtn" disabled>
+                    <i class="fas fa-download"></i> 下载多Sheet Excel
+                </button>
+                <button class="btn btn-danger" id="downloadZipBtn" disabled>
+                    <i class="fas fa-file-archive"></i> 下载ZIP打包文件
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Excel分表工具 | 数据在浏览器本地处理，不上传服务器</p>
+        </footer>
+    </div>
+
+    <!-- 引入SheetJS库处理Excel文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- 引入JSZip库创建ZIP文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 引入FileSaver.js保存文件 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <script>
+        // 全局变量
+        let workbook = null;
+        let worksheet = null;
+        let headers = [];
+        let splitValues = [];
+        let originalFileName = "";
+        let totalRows = 0;
+        let totalCols = 0;
+        let splitColumnIndex = -1;
+        let rowIndexMap = new Map();
+        let lastAnalyzedColumnIndex = -1;
+        
+        // DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileSelected = document.getElementById('fileSelected');
+        const fileNameSpan = document.getElementById('fileName');
+        const statsInfo = document.getElementById('statsInfo');
+        const rowCountSpan = document.getElementById('rowCount');
+        const colCountSpan = document.getElementById('colCount');
+        const splitColumn = document.getElementById('splitColumn');
+        const keepMasterCheckbox = document.getElementById('keepMaster');
+        const keepMasterContainer = document.getElementById('keepMasterContainer');
+        const prefixInput = document.getElementById('prefix');
+        const suffixInput = document.getElementById('suffix');
+        const splitInfo = document.getElementById('splitInfo');
+        const loading = document.getElementById('loading');
+        const downloadSheetsBtn = document.getElementById('downloadSheetsBtn');
+        const downloadZipBtn = document.getElementById('downloadZipBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const statusBar = document.getElementById('statusBar');
+        const statusText = document.getElementById('statusText');
+        const loadingText = document.getElementById('loadingText');
+        
+        // 显示状态信息
+        function showStatus(message, isError = false) {
+            statusText.textContent = message;
+            statusBar.classList.add('active');
+            
+            if (isError) {
+                statusBar.style.borderLeftColor = '#dc3545';
+                statusBar.querySelector('.status-icon').className = 'fas fa-exclamation-circle status-icon';
+                statusBar.querySelector('.status-icon').style.color = '#dc3545';
+            } else {
+                statusBar.style.borderLeftColor = '#4b6cb7';
+                statusBar.querySelector('.status-icon').className = 'fas fa-info-circle status-icon';
+                statusBar.querySelector('.status-icon').style.color = '#4b6cb7';
+            }
+        }
+        
+        // 显示错误信息
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('active');
+            
+            setTimeout(() => {
+                errorMessage.classList.remove('active');
+            }, 5000);
+            
+            showStatus(message, true);
+        }
+        
+        // 更新加载状态
+        function updateLoading(message) {
+            loadingText.textContent = message;
+            loading.classList.add('active');
+        }
+        
+        // 停止加载
+        function stopLoading() {
+            loading.classList.remove('active');
+        }
+        
+        // 复选框点击事件
+        keepMasterContainer.addEventListener('click', function() {
+            keepMasterCheckbox.checked = !keepMasterCheckbox.checked;
+            if (splitColumn.value) updateSplitPreview();
+        });
+        
+        // 拖拽上传功能
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#4b6cb7';
+            uploadArea.style.backgroundColor = '#f0f4ff';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#a0b3e0';
+            uploadArea.style.backgroundColor = '#f8faff';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#a0b3e0';
+            uploadArea.style.backgroundColor = '#f8faff';
+            
+            const file = e.dataTransfer.files[0];
+            if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+                handleFile(file);
+            } else {
+                showError('请上传有效的Excel文件 (.xlsx 或 .xls 格式)');
+            }
+        });
+        
+        // 文件选择事件处理 - 整个上传区域可点击
+        uploadArea.addEventListener('click', (e) => {
+            // 如果点击的不是文件输入框本身，则触发文件选择
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+        
+        // 文件选择事件处理
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+        
+        // 处理上传的Excel文件
+        async function handleFile(file) {
+            originalFileName = file.name.replace(/\.[^/.]+$/, "");
+            
+            // 重置状态
+            errorMessage.classList.remove('active');
+            downloadSheetsBtn.disabled = true;
+            downloadZipBtn.disabled = true;
+            
+            updateLoading('正在读取Excel文件...');
+            fileNameSpan.textContent = file.name;
+            fileSelected.classList.add('active');
+            showStatus('正在读取Excel文件...');
+            
+            try {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        workbook = XLSX.read(data, {type: 'array'});
+                        
+                        // 获取第一个工作表
+                        const firstSheetName = workbook.SheetNames[0];
+                        worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // 获取工作表范围
+                        const range = XLSX.utils.decode_range(worksheet['!ref']);
+                        totalRows = range.e.r + 1;
+                        totalCols = range.e.c + 1;
+                        
+                        // 显示数据统计
+                        rowCountSpan.textContent = totalRows.toLocaleString();
+                        colCountSpan.textContent = totalCols.toLocaleString();
+                        statsInfo.classList.add('active');
+                        
+                        // 获取表头
+                        headers = [];
+                        for (let col = 0; col < totalCols; col++) {
+                            const cellAddress = XLSX.utils.encode_cell({r: 0, c: col});
+                            const cell = worksheet[cellAddress];
+                            headers.push(cell ? String(cell.v) : `列${col+1}`);
+                        }
+                        
+                        // 重置分析状态
+                        lastAnalyzedColumnIndex = -1;
+                        splitValues = [];
+                        rowIndexMap.clear();
+                        
+                        // 更新列选择下拉框
+                        updateColumnSelect();
+                        
+                        // 启用列选择
+                        splitColumn.disabled = false;
+                        
+                        stopLoading();
+                        showStatus('文件加载成功！请选择分表依据列。');
+                        
+                        // 清除旧的预览
+                        splitInfo.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-table"></i>
+                                <p>文件已加载，请选择分表依据列查看拆分结果</p>
+                            </div>
+                        `;
+                    } catch (error) {
+                        stopLoading();
+                        console.error('处理Excel文件时出错:', error);
+                        showError('读取Excel文件时出错: ' + error.message);
+                    }
+                };
+                
+                reader.onerror = function() {
+                    stopLoading();
+                    showError('读取文件时发生错误');
+                };
+                
+                reader.readAsArrayBuffer(file);
+            } catch (error) {
+                stopLoading();
+                console.error('处理文件时出错:', error);
+                showError('处理文件时出错: ' + error.message);
+            }
+        }
+        
+        // 更新列选择下拉框
+        function updateColumnSelect() {
+            splitColumn.innerHTML = '<option value="">请选择分表依据列</option>';
+            headers.forEach((header, index) => {
+                splitColumn.innerHTML += `<option value="${index}">${header} (第${index + 1}列)</option>`;
+            });
+        }
+        
+        // 选择分表列后自动生成拆分结果预览
+        splitColumn.addEventListener('change', async () => {
+            await updateSplitPreview();
+        });
+        
+        // 前缀或后缀变化时也更新预览
+        prefixInput.addEventListener('input', () => {
+            if (splitColumn.value) displaySplitInfo();
+        });
+        
+        suffixInput.addEventListener('input', () => {
+            if (splitColumn.value) displaySplitInfo();
+        });
+        
+        // 更新拆分结果预览
+        async function updateSplitPreview() {
+            splitColumnIndex = parseInt(splitColumn.value);
+            if (isNaN(splitColumnIndex)) {
+                splitInfo.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-table"></i>
+                        <p>请选择分表依据列以查看拆分结果</p>
+                    </div>
+                `;
+                downloadSheetsBtn.disabled = true;
+                downloadZipBtn.disabled = true;
+                return;
+            }
+            
+            // 如果列没有改变且已经分析过，直接显示
+            if (lastAnalyzedColumnIndex === splitColumnIndex && splitValues.length > 0) {
+                displaySplitInfo();
+                downloadSheetsBtn.disabled = false;
+                downloadZipBtn.disabled = false;
+                showStatus('数据分析完成！可以开始下载文件。');
+                return;
+            }
+            
+            updateLoading('正在分析数据...');
+            showStatus('正在分析数据...');
+            
+            try {
+                await analyzeData();
+                
+                // 显示拆分信息
+                displaySplitInfo();
+                
+                // 启用下载按钮
+                downloadSheetsBtn.disabled = false;
+                downloadZipBtn.disabled = false;
+                
+                stopLoading();
+                showStatus('数据分析完成！可以开始下载文件。');
+            } catch (error) {
+                console.error('分析数据时出错:', error);
+                stopLoading();
+                showError('分析数据时出错: ' + error.message);
+            }
+        }
+        
+        // 分析数据
+        async function analyzeData() {
+            rowIndexMap.clear();
+            const valueSet = new Set();
+            const CHUNK_SIZE = 5000;
+            
+            if (!worksheet) {
+                throw new Error('无法读取工作表数据');
+            }
+            
+            let processedRows = 0;
+            
+            // 分块处理数据
+            for (let chunkStart = 1; chunkStart < totalRows; chunkStart += CHUNK_SIZE) {
+                const chunkEnd = Math.min(chunkStart + CHUNK_SIZE, totalRows);
+                
+                // 获取当前块的数据
+                const chunkData = XLSX.utils.sheet_to_json(worksheet, {
+                    header: 1,
+                    range: {s: {r: chunkStart, c: 0}, e: {r: chunkEnd - 1, c: totalCols - 1}}
+                });
+                
+                // 处理当前块的数据
+                chunkData.forEach((row, rowIndexInChunk) => {
+                    if (row && row[splitColumnIndex] !== undefined) {
+                        const value = String(row[splitColumnIndex]).trim();
+                        if (value) {
+                            valueSet.add(value);
+                            
+                            // 构建索引
+                            if (!rowIndexMap.has(value)) {
+                                rowIndexMap.set(value, []);
+                            }
+                            rowIndexMap.get(value).push(chunkStart + rowIndexInChunk);
+                        }
+                    }
+                });
+                
+                processedRows = Math.min(chunkEnd, totalRows);
+                
+                // 释放内存
+                chunkData.length = 0;
+                
+                // 短暂释放UI线程
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            splitValues = Array.from(valueSet).sort();
+            lastAnalyzedColumnIndex = splitColumnIndex;
+        }
+        
+        // 显示拆分信息
+        function displaySplitInfo() {
+            const keepMaster = keepMasterCheckbox.checked;
+            const prefix = prefixInput.value.trim();
+            const suffix = suffixInput.value.trim();
+            
+            let infoHTML = `<h4>拆分结果：根据"<span style="color:#4b6cb7">${headers[splitColumnIndex]}</span>"列</h4>`;
+            const totalFiles = splitValues.length + (keepMaster ? 1 : 0);
+            infoHTML += `<p>将生成 <strong style="color:#28a745">${totalFiles}</strong> 个文件</p>`;
+            infoHTML += '<ul>';
+            
+            // 如果有总表，先显示总表
+            if (keepMaster) {
+                infoHTML += `<li><i class="fas fa-clipboard-list master-icon"></i> <strong>${originalFileName}</strong> (总表)</li>`;
+            }
+            
+            // 显示分表
+            splitValues.forEach(value => {
+                let fileName = value;
+                if (prefix) fileName = prefix + fileName;
+                if (suffix) fileName = fileName + suffix;
+                const rowCount = rowIndexMap.has(value) ? rowIndexMap.get(value).length : 0;
+                infoHTML += `<li><i class="fas fa-file-excel file-icon"></i> ${fileName} <span class="row-count">${rowCount.toLocaleString()}行</span></li>`;
+            });
+            
+            infoHTML += '</ul>';
+            
+            // 添加文件计数
+            infoHTML += `<div class="file-count">
+                <i class="fas fa-info-circle"></i> 总计: ${totalFiles} 个文件 (${keepMaster ? '1个总表 + ' : ''}${splitValues.length}个分表)
+            </div>`;
+            
+            splitInfo.innerHTML = infoHTML;
+        }
+        
+        // 下载多Sheet Excel文件
+        downloadSheetsBtn.addEventListener('click', async () => {
+            if (isNaN(splitColumnIndex)) {
+                showError('请先选择分表依据列');
+                return;
+            }
+            
+            updateLoading('正在生成Excel文件...');
+            showStatus('正在生成Excel文件...');
+            
+            try {
+                await generateMultiSheetExcel();
+            } catch (error) {
+                console.error('生成Excel文件时出错:', error);
+                showError('生成Excel文件时出错: ' + error.message);
+            }
+        });
+        
+        // 生成多Sheet Excel文件
+        async function generateMultiSheetExcel() {
+            const keepMaster = keepMasterCheckbox.checked;
+            const prefix = prefixInput.value.trim();
+            const suffix = suffixInput.value.trim();
+            
+            // 创建一个新的工作簿
+            const newWorkbook = XLSX.utils.book_new();
+            
+            // 如果有总表，先添加总表
+            if (keepMaster) {
+                updateLoading('正在添加总表...');
+                showStatus('正在添加总表...');
+                
+                // 创建总表
+                const masterSheet = await createSheetWithChunks(headers, null);
+                XLSX.utils.book_append_sheet(newWorkbook, masterSheet, '总表');
+            }
+            
+            // 为每个拆分值创建一个工作表
+            const totalValues = splitValues.length;
+            let processedValues = 0;
+            
+            for (const value of splitValues) {
+                processedValues++;
+                updateLoading(`正在生成分表: ${processedValues}/${totalValues} (${value})`);
+                showStatus(`正在生成分表: ${processedValues}/${totalValues} (${value})`);
+                
+                // 获取该值的所有行索引
+                const rowIndices = rowIndexMap.get(value) || [];
+                
+                if (rowIndices.length === 0) continue;
+                
+                // 创建工作表
+                let sheetName = value;
+                if (prefix) sheetName = prefix + sheetName;
+                if (suffix) sheetName = sheetName + suffix;
+                sheetName = sheetName.substring(0, 31);
+                
+                // 创建分表
+                const ws = await createSheetWithChunks(headers, rowIndices);
+                XLSX.utils.book_append_sheet(newWorkbook, ws, sheetName);
+                
+                // 短暂释放UI线程
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            // 生成Excel文件并下载
+            updateLoading('正在保存文件...');
+            showStatus('正在保存文件...');
+            
+            try {
+                // 使用流式写入，避免一次性生成大数组
+                const excelBuffer = XLSX.write(newWorkbook, {
+                    bookType: 'xlsx', 
+                    type: 'array',
+                    compression: true
+                });
+                
+                const blob = new Blob([excelBuffer], {type: 'application/octet-stream'});
+                
+                let fileName = originalFileName + '_拆分结果_多sheet.xlsx';
+                saveAs(blob, fileName);
+                
+                stopLoading();
+                showStatus('Excel文件生成完成！');
+                
+            } catch (error) {
+                console.error('保存文件时出错:', error);
+                throw new Error('生成Excel文件时出错，建议使用ZIP打包功能。');
+            }
+        }
+        
+        // 分块创建工作表
+        async function createSheetWithChunks(headers, rowIndices) {
+            // 创建一个只有表头的工作表
+            const ws = XLSX.utils.aoa_to_sheet([headers]);
+            
+            // 如果没有行索引，返回只有表头的工作表
+            if (!rowIndices) {
+                // 添加所有数据行
+                const CHUNK_SIZE = 2000;
+                let currentRow = 1;
+                
+                for (let chunkStart = 1; chunkStart < totalRows; chunkStart += CHUNK_SIZE) {
+                    const chunkEnd = Math.min(chunkStart + CHUNK_SIZE, totalRows);
+                    
+                    // 获取当前块的数据
+                    const chunkData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1,
+                        range: {s: {r: chunkStart, c: 0}, e: {r: chunkEnd - 1, c: totalCols - 1}}
+                    });
+                    
+                    // 添加到工作表
+                    XLSX.utils.sheet_add_aoa(ws, chunkData, {origin: {r: currentRow, c: 0}});
+                    currentRow += chunkData.length;
+                    
+                    // 释放内存
+                    chunkData.length = 0;
+                    
+                    // 定期释放UI线程
+                    if (chunkStart % (CHUNK_SIZE * 5) === 0) {
+                        await new Promise(resolve => setTimeout(resolve, 10));
+                    }
+                }
+                
+                return ws;
+            }
+            
+            // 有行索引的情况
+            const CHUNK_SIZE = 2000;
+            let currentRow = 1;
+            
+            // 分块添加数据
+            for (let i = 0; i < rowIndices.length; i += CHUNK_SIZE) {
+                const batchIndices = rowIndices.slice(i, Math.min(i + CHUNK_SIZE, rowIndices.length));
+                const batchData = [];
+                
+                // 获取这批行的数据
+                for (const rowIndex of batchIndices) {
+                    const row = [];
+                    for (let col = 0; col < totalCols; col++) {
+                        const cellAddress = XLSX.utils.encode_cell({r: rowIndex, c: col});
+                        const cell = worksheet[cellAddress];
+                        row.push(cell ? cell.v : '');
+                    }
+                    batchData.push(row);
+                }
+                
+                // 添加到工作表
+                XLSX.utils.sheet_add_aoa(ws, batchData, {origin: {r: currentRow, c: 0}});
+                currentRow += batchData.length;
+                
+                // 释放内存
+                batchData.length = 0;
+                
+                // 定期释放UI线程
+                if (i % (CHUNK_SIZE * 5) === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+            }
+            
+            return ws;
+        }
+        
+        // 下载ZIP打包文件
+        downloadZipBtn.addEventListener('click', async () => {
+            if (isNaN(splitColumnIndex)) {
+                showError('请先选择分表依据列');
+                return;
+            }
+            
+            updateLoading('正在准备生成ZIP文件...');
+            showStatus('正在准备生成ZIP文件...');
+            
+            try {
+                await generateZipFiles();
+            } catch (error) {
+                console.error('生成ZIP文件时出错:', error);
+                showError('生成ZIP文件时出错: ' + error.message);
+            }
+        });
+        
+        // 生成ZIP打包文件
+        async function generateZipFiles() {
+            const keepMaster = keepMasterCheckbox.checked;
+            const prefix = prefixInput.value.trim();
+            const suffix = suffixInput.value.trim();
+            const zip = new JSZip();
+            
+            // 如果有总表，先添加总表
+            if (keepMaster) {
+                updateLoading('正在添加总表到ZIP...');
+                showStatus('正在添加总表到ZIP...');
+                
+                // 创建总表工作簿
+                const masterWorkbook = XLSX.utils.book_new();
+                const masterSheet = await createSheetWithChunks(headers, null);
+                XLSX.utils.book_append_sheet(masterWorkbook, masterSheet, 'Sheet1');
+                
+                // 生成Excel数据
+                const excelBuffer = XLSX.write(masterWorkbook, {bookType: 'xlsx', type: 'array', compression: true});
+                zip.file(`${originalFileName}.xlsx`, excelBuffer);
+            }
+            
+            // 为每个拆分值创建一个Excel文件并添加到ZIP
+            const totalValues = splitValues.length;
+            let processedValues = 0;
+            
+            for (const value of splitValues) {
+                processedValues++;
+                updateLoading(`正在生成分表文件: ${processedValues}/${totalValues} (${value})`);
+                showStatus(`正在生成分表文件: ${processedValues}/${totalValues} (${value})`);
+                
+                // 获取该值的所有行索引
+                const rowIndices = rowIndexMap.get(value) || [];
+                
+                if (rowIndices.length > 0) {
+                    // 创建工作簿
+                    const singleWorkbook = XLSX.utils.book_new();
+                    const ws = await createSheetWithChunks(headers, rowIndices);
+                    XLSX.utils.book_append_sheet(singleWorkbook, ws, 'Sheet1');
+                    
+                    // 生成Excel数据
+                    const excelBuffer = XLSX.write(singleWorkbook, {bookType: 'xlsx', type: 'array', compression: true});
+                    
+                    // 创建文件名
+                    let fileName = value;
+                    if (prefix) fileName = prefix + fileName;
+                    if (suffix) fileName = fileName + suffix;
+                    fileName += '.xlsx';
+                    
+                    // 添加到ZIP
+                    zip.file(fileName, excelBuffer);
+                }
+                
+                // 短暂释放UI线程
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            // 生成ZIP文件并下载
+            updateLoading('正在生成ZIP文件...');
+            showStatus('正在生成ZIP文件...');
+            
+            const zipBlob = await zip.generateAsync({type: 'blob'});
+            let zipFileName = originalFileName + '_拆分结果_打包.zip';
+            saveAs(zipBlob, zipFileName);
+            
+            stopLoading();
+            showStatus('ZIP文件生成完成！');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>走店组客赞客诉提取工具</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --primary: #4f46e5; --primary-light: #e0e7ff;
+  --success: #059669; --success-light: #d1fae5;
+  --warning: #d97706; --warning-light: #fef3c7;
+  --danger: #dc2626;  --danger-light: #fee2e2;
+  --gray: #6b7280;    --gray-light: #f3f4f6;
+  --border: #e5e7eb;  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f8fafc; color: #1e293b; line-height: 1.6; min-height: 100vh;
+}
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+.header {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: #fff; padding: 28px 32px; border-radius: var(--radius);
+  margin-bottom: 24px; box-shadow: 0 4px 20px rgba(79,70,229,.25);
+}
+.header h1 { font-size: 1.6rem; font-weight: 700; }
+.header p { opacity: .85; font-size: .9rem; margin-top: 4px; }
+
+.card {
+  background: #fff; border-radius: var(--radius); border: 1px solid var(--border);
+  box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px;
+}
+.card h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.card h2 .icon { font-size: 1.3rem; }
+
+/* —— 主上传区（问卷数据）—— */
+.upload-main {
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  padding: 32px 24px; text-align: center; cursor: pointer; transition: all .2s;
+  background: #fafbfc;
+}
+.upload-main:hover { border-color: var(--primary); background: #fafaff; }
+.upload-main.loaded { border-color: var(--success); border-style: solid; background: var(--success-light); }
+.upload-main .label { font-weight: 600; font-size: 1rem; margin-bottom: 4px; }
+.upload-main .hint { font-size: .82rem; color: var(--gray); }
+.upload-main .status { font-size: .82rem; margin-top: 10px; font-weight: 500; }
+.upload-main input[type=file] { display: none; }
+
+/* —— 架构管理栏 —— */
+.arch-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 14px 18px; border-radius: 8px; margin-top: 16px;
+  font-size: .85rem;
+}
+.arch-bar.loaded { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.arch-bar.empty  { background: #fffbeb; border: 1px solid #fcd34d; }
+.arch-bar .arch-icon { font-size: 1.2rem; }
+.arch-bar .arch-info { flex: 1; min-width: 180px; }
+.arch-bar .arch-info .arch-title { font-weight: 600; }
+.arch-bar .arch-info .arch-detail { font-size: .78rem; color: var(--gray); margin-top: 2px; }
+.arch-bar .arch-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.arch-bar input[type=file] { display: none; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: 8px; border: none;
+  font-size: .9rem; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: #4338ca; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #047857; }
+.btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-danger { background: #fff; color: var(--danger); border: 1.5px solid var(--danger); }
+.btn-danger:hover { background: var(--danger-light); }
+.btn-sm { padding: 5px 12px; font-size: .8rem; }
+.btn-xs { padding: 2px 8px; font-size: .72rem; border-radius: 4px; }
+
+.filter-bar {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+.filter-bar label { font-weight: 500; font-size: .85rem; }
+.filter-bar input[type=date] {
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: .85rem;
+}
+
+.stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.stat-tag {
+  padding: 6px 14px; border-radius: 20px; font-size: .8rem; font-weight: 600;
+  cursor: pointer; transition: all .15s; user-select: none; border: 2px solid transparent;
+}
+.stat-tag.praise { background: var(--success-light); color: var(--success); }
+.stat-tag.praise.active { background: var(--success); color: #fff; border-color: var(--success); }
+.stat-tag.complaint { background: var(--danger-light); color: var(--danger); }
+.stat-tag.complaint.active { background: var(--danger); color: #fff; border-color: var(--danger); }
+.stat-tag.normal { background: var(--warning-light); color: var(--warning); }
+.stat-tag.normal.active { background: var(--warning); color: #fff; border-color: var(--warning); }
+.stat-tag.both { background: #ede9fe; color: #7c3aed; }
+.stat-tag.both.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.stat-tag.all { background: var(--primary-light); color: var(--primary); }
+.stat-tag.all.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.table-wrap { overflow-x: auto; max-height: 55vh; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+th {
+  position: sticky; top: 0; z-index: 1;
+  background: #f1f5f9; padding: 10px 12px; text-align: left;
+  font-weight: 600; font-size: .78rem; color: #475569; border-bottom: 2px solid #cbd5e1;
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:hover td { background: #f8fafc; }
+tr.row-unmatched { background: #fff7ed; }
+tr.row-unmatched:hover td { background: #fff2e0; }
+
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: .73rem; font-weight: 600; }
+.tag-praise { background: var(--success-light); color: var(--success); }
+.tag-complaint { background: var(--danger-light); color: var(--danger); }
+.tag-normal { background: var(--warning-light); color: var(--warning); }
+.tag-both { background: #ede9fe; color: #7c3aed; }
+
+.result-actions {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.result-actions .sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+.copy-area textarea {
+  width: 100%; height: 120px; font-family: 'Consolas','Courier New',monospace;
+  font-size: .85rem; padding: 10px; border: 1px solid var(--border);
+  border-radius: 6px; resize: vertical; background: #fafafa;
+}
+
+.toast {
+  position: fixed; top: 20px; right: 20px; z-index: 999;
+  padding: 12px 20px; border-radius: 8px; color: #fff; font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  opacity: 0; transform: translateY(-10px); transition: all .3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-success { background: var(--success); }
+.toast-error { background: var(--danger); }
+.toast-info { background: var(--primary); }
+
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.text-muted { color: var(--gray); font-size: .85rem; }
+.mt-2 { margin-top: 8px; }
+.mb-2 { margin-bottom: 8px; }
+.mr-2 { margin-right: 8px; }
+.flex { display: flex; }
+.gap-sm { gap: 8px; }
+.flex-wrap { flex-wrap: wrap; }
+.items-center { align-items: center; }
+.warn-box {
+  background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px;
+  padding: 12px 16px; font-size: .85rem; margin-top: 12px;
+}
+.warn-box strong { color: #b45309; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div id="toast" class="toast"></div>
+
+  <div class="header">
+    <h1>📋 走店组客赞客诉提取工具</h1>
+    <p>上传问卷星 Excel → 自动匹配门店编号 → 筛选导出 Excel / CSV / 排版 HTML</p>
+  </div>
+
+  <!-- Step 1: 问卷数据上传 + 架构管理 -->
+  <div class="card">
+    <h2><span class="icon">📁</span> 第一步：上传问卷数据</h2>
+
+    <!-- 主上传区：问卷数据 -->
+    <div class="upload-main" id="zoneData" onclick="document.getElementById('fileData').click()">
+      <div class="label">📊 点击选择问卷星导出的 Excel 文件</div>
+      <div class="hint">含"评估门店""评估时间""客赞/平常/客诉"列 ｜ 支持 .xlsx / .xls</div>
+      <div class="status" id="statusData">点击此处选择文件 或 拖拽文件到此处</div>
+      <input type="file" id="fileData" accept=".xlsx,.xls" onchange="handleDataFile(this)">
+    </div>
+
+    <!-- 架构管理栏（次要） -->
+    <div class="arch-bar empty" id="archBar">
+      <span class="arch-icon">🏗️</span>
+      <div class="arch-info">
+        <div class="arch-title" id="archTitle">尚未导入门店架构</div>
+        <div class="arch-detail" id="archDetail">导入后可自动匹配门店编号，架构数据将保存在浏览器中</div>
+      </div>
+      <div class="arch-actions">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('fileArch').click()">📤 导入架构</button>
+        <button class="btn btn-danger btn-sm hidden" id="btnClearArch" onclick="clearArchStorage()">🗑 清除架构</button>
+        <input type="file" id="fileArch" accept=".xlsx,.xls" onchange="handleArchFile(this)">
+      </div>
+    </div>
+
+    <div id="matchSummary" class="hidden" style="margin-top:16px;padding:12px 16px;background:#f0fdf4;border-radius:8px;font-size:.9rem;font-weight:500;"></div>
+    <div id="unmatchedWarning" class="warn-box hidden"></div>
+  </div>
+
+  <!-- Step 2: 结果区 -->
+  <div id="resultSection" class="card hidden">
+    <h2><span class="icon">🔍</span> 第二步：筛选与导出</h2>
+
+    <!-- 日期筛选 -->
+    <div class="filter-bar">
+      <label>📅 评估日期：</label>
+      <input type="date" id="dateFrom" onchange="applyFilters()">
+      <span style="color:#94a3b8">—</span>
+      <input type="date" id="dateTo" onchange="applyFilters()">
+      <button class="btn btn-outline btn-sm" onclick="clearDateFilter()">清除</button>
+      <span style="margin-left:4px;color:var(--gray);font-size:.78rem;" id="dateRangeHint"></span>
+    </div>
+
+    <!-- 类型统计标签 -->
+    <div class="stats" id="statsBar"></div>
+
+    <!-- 搜索 -->
+    <div class="flex gap-sm items-center flex-wrap mb-2">
+      <input type="text" id="searchInput" placeholder="🔎 搜索门店名称/编号/评估人..."
+             style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;width:280px;"
+             oninput="applyFilters()">
+      <span id="resultCount" class="text-muted"></span>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-wrap">
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:100px">评估时间</th>
+            <th>门店名称</th>
+            <th style="width:120px">门店编号</th>
+            <th style="width:75px">类型</th>
+            <th style="width:80px">评估人</th>
+            <th>内容摘要</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+
+    <!-- 导出操作 -->
+    <div class="result-actions">
+      <span style="font-weight:600;font-size:.9rem;">📤 导出：</span>
+      <button class="btn btn-primary btn-sm" onclick="copyCodes('all')">📋 复制全部编号</button>
+      <button class="btn btn-success btn-sm" onclick="copyCodes('praise')">👍 仅客赞编号</button>
+      <button class="btn btn-sm" style="background:#dc2626;color:#fff;" onclick="copyCodes('complaint')">👎 仅客诉编号</button>
+      <button class="btn btn-sm" style="background:#d97706;color:#fff;" onclick="copyCodes('normal')">😐 仅平常编号</button>
+      <span class="sep"></span>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 导出 CSV</button>
+      <button class="btn btn-success btn-sm" onclick="exportXLSX()">📊 导出 Excel</button>
+      <button class="btn btn-primary btn-sm" onclick="exportHTML()">📄 下载排版 HTML</button>
+      <span id="copyHint" class="text-muted"></span>
+    </div>
+    <div class="copy-area mt-2">
+      <textarea id="copyBox" placeholder="复制按钮点击后，门店编号会出现在这里，每行一个，可直接粘贴到 Excel 中…" readonly></textarea>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ==================== 常量 ====================
+const ARCH_STORAGE_KEY = 'zoudian_arch_store';
+const TYPE_MAP = { praise: '客赞', complaint: '客诉', both: '客赞+客诉', normal: '平常' };
+const EMPTY_VALUES = new Set(['', '(空)', '（空）', '(跳过)', '（跳过）', '()', '（）', '-', '--', '/']);
+
+// ==================== 全局状态 ====================
+let rawData = [];
+let archMap = new Map();     // 门店名称 → { code, name }
+let archList = [];
+let matchResults = [];
+let filterType = 'all';      // 'all' | 'praise' | 'complaint' | 'normal' | 'both'
+let debugLines = [];
+
+// ==================== 初始化：从 localStorage 恢复架构 ====================
+function loadArchFromStorage() {
+  try {
+    const raw = localStorage.getItem(ARCH_STORAGE_KEY);
+    if (!raw) return false;
+
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.stores) || data.stores.length === 0) return false;
+
+    archList = data.stores;
+    archMap = new Map();
+    for (const s of archList) {
+      // 同名覆盖：后出现的覆盖先出现的
+      archMap.set(s.name, { name: s.name, code: s.code });
+    }
+
+    renderArchBar(true);
+    console.log('[架构] 从浏览器存储恢复：' + archList.length + ' 家门店，更新于 ' + (data.updatedAt || '未知'));
+    return true;
+  } catch (e) {
+    console.error('[架构] localStorage 读取失败：', e);
+    return false;
+  }
+}
+
+function saveArchToStorage() {
+  const data = {
+    updatedAt: new Date().toLocaleString('zh-CN'),
+    stores: archList,
+  };
+  try {
+    localStorage.setItem(ARCH_STORAGE_KEY, JSON.stringify(data));
+    console.log('[架构] 已保存 ' + archList.length + ' 家门店到浏览器存储');
+  } catch (e) {
+    console.error('[架构] localStorage 写入失败（可能存储空间不足）：', e);
+    showToast('⚠️ 架构数据保存失败，请检查浏览器存储空间', 'error');
+  }
+}
+
+function clearArchStorage() {
+  if (!confirm('确定要清除浏览器中保存的所有门店架构数据吗？\n\n清除后需重新导入架构文件才能匹配门店编号。')) return;
+
+  localStorage.removeItem(ARCH_STORAGE_KEY);
+  archList = [];
+  archMap = new Map();
+  matchResults = [];
+  renderArchBar(false);
+  document.getElementById('resultSection').classList.add('hidden');
+  document.getElementById('matchSummary').classList.add('hidden');
+  document.getElementById('unmatchedWarning').classList.add('hidden');
+  document.getElementById('statusData').textContent = '点击此处选择文件 或 拖拽文件到此处';
+  document.getElementById('zoneData').classList.remove('loaded');
+  rawData = [];
+  showToast('🗑 架构数据已清除', 'info');
+}
+
+function renderArchBar(hasData) {
+  const bar = document.getElementById('archBar');
+  const title = document.getElementById('archTitle');
+  const detail = document.getElementById('archDetail');
+  const btnClear = document.getElementById('btnClearArch');
+
+  if (hasData && archList.length > 0) {
+    bar.className = 'arch-bar loaded';
+    title.textContent = `已加载 ${archList.length} 家门店架构`;
+    // 从 localStorage 读取更新时间
+    let updateStr = '';
+    try {
+      const raw = localStorage.getItem(ARCH_STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.updatedAt) updateStr = ' · 更新于 ' + data.updatedAt;
+      }
+    } catch (e) {}
+    detail.textContent = '门店编号匹配已就绪' + updateStr + ' ｜ 重新导入将合并覆盖同名门店';
+    btnClear.classList.remove('hidden');
+  } else {
+    bar.className = 'arch-bar empty';
+    title.textContent = '尚未导入门店架构';
+    detail.textContent = '导入架构 Excel 后可自动匹配门店编号，数据将保存在浏览器中';
+    btnClear.classList.add('hidden');
+  }
+}
+
+// ==================== 文件处理 ====================
+
+// 主流程：处理问卷数据文件
+function handleDataFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const zone = document.getElementById('zoneData');
+  const status = document.getElementById('statusData');
+
+  status.textContent = '⏳ 正在解析问卷数据…';
+  zone.classList.add('loaded');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      parseDataFile(json);
+      status.textContent = `✅ 已加载 ${rawData.length} 条评估记录`;
+
+      // 如果架构已就绪，自动匹配
+      if (archList.length > 0) {
+        doMatch();
+      } else {
+        showToast('⚠️ 请先导入门店架构表以匹配编号', 'info');
+      }
+    } catch(err) {
+      status.textContent = '❌ 解析失败：' + err.message;
+      zone.classList.remove('loaded');
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// 次要流程：处理架构文件（写入 localStorage）
+function handleArchFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  showToast('⏳ 正在解析架构文件…', 'info');
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+      parseArchFile(json);
+
+      if (archList.length > 0) {
+        saveArchToStorage();
+        renderArchBar(true);
+        showToast(`✅ 架构已更新：${archList.length} 家门店（浏览器存储中）`, 'success');
+      }
+    } catch(err) {
+      showToast('❌ 架构解析失败：' + err.message, 'error');
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  // 重置 input，允许重复导入同一文件
+  input.value = '';
+}
+
+// ==================== 解析客赞客诉文件 ====================
+function parseDataFile(rows) {
+  rawData = [];
+  debugLines = debugLines.filter(l => l.startsWith('🏗️'));
+
+  if (!rows || rows.length < 2) {
+    document.getElementById('statusData').textContent = '❌ 文件内容为空或只有表头';
+    document.getElementById('zoneData').classList.remove('loaded');
+    return;
+  }
+
+  let headerRowIdx = -1;
+  let header = [];
+  const keyCols = ['评估时间', '评估门店', '评估的门店', '客赞', '平常', '客诉', '评估人'];
+
+  for (let scan = 0; scan < Math.min(10, rows.length); scan++) {
+    const row = rows[scan];
+    if (!row || !row.length) continue;
+    const rowStr = row.map(c => String(c || '')).join(' ');
+    let matchCount = 0;
+    for (const kw of keyCols) {
+      if (rowStr.includes(kw)) matchCount++;
+    }
+    if (matchCount >= 2) {
+      headerRowIdx = scan;
+      header = row.map(h => String(h || '').trim());
+      break;
+    }
+  }
+
+  if (headerRowIdx < 0) {
+    document.getElementById('statusData').textContent =
+      '❌ 未找到表头行（需包含"评估时间""评估门店"等列）';
+    document.getElementById('zoneData').classList.remove('loaded');
+    return;
+  }
+
+  function findCol(keywords) {
+    for (let i = 0; i < header.length; i++) {
+      const h = header[i];
+      for (const kw of keywords) {
+        if (h.includes(kw)) return i;
+      }
+    }
+    return -1;
+  }
+
+  const colEvalTime = findCol(['评估时间']);
+  const colStore = findCol(['评估门店', '评估的门店']);
+  const colEvaluator = findCol(['评估人姓名', '评估人']);
+  const colImprove = findCol(['改善', '机会点']);
+
+  // “感受是，想给门店”是类型选择列；“请把…写在此处”才是实际评价内容。
+  // 新版渠道评估表同时包含这两类列，必须分开识别，避免把选项文案当作评价内容导出。
+  const colType = findCol(['本次评估你的感受', '想给门店']);
+  function findContentCol(keywords) {
+    for (let i = 0; i < header.length; i++) {
+      const h = header[i];
+      if (i !== colType && keywords.some(kw => h.includes(kw))) return i;
+    }
+    return -1;
+  }
+  const praiseCol = findContentCol(['表扬信', '客赞']);
+  const normalCol = findContentCol(['平常', '陈述现状']);
+  const complaintCol = findContentCol(['投诉信', '客诉']);
+
+  debugLines = debugLines.filter(l => l.startsWith('🏗️'));
+  debugLines.push(`表头行号: ${headerRowIdx + 1}, 数据从第${headerRowIdx + 2}行开始`);
+  debugLines.push(`评估时间列[${colEvalTime}]: ${colEvalTime>=0?header[colEvalTime]:'未找到'}`);
+  debugLines.push(`门店列[${colStore}]: ${colStore>=0?header[colStore]:'未找到'}`);
+  debugLines.push(`类型列[${colType}]: ${colType>=0?header[colType]:'未找到'}`);
+  debugLines.push(`客赞列[${praiseCol}]: ${praiseCol>=0?header[praiseCol]:'未找到'}`);
+  debugLines.push(`平常列[${normalCol}]: ${normalCol>=0?header[normalCol]:'未找到'}`);
+  debugLines.push(`客诉列[${complaintCol}]: ${complaintCol>=0?header[complaintCol]:'未找到'}`);
+  if (colStore < 0) debugLines.push('⚠️ 关键列"评估门店"未找到，请检查文件格式');
+
+  for (let r = headerRowIdx + 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.every(c => c === '' || c === null || c === undefined)) continue;
+
+    const storeRaw = colStore >= 0 ? String(row[colStore] || '').trim() : '';
+    if (!storeRaw) continue;
+
+    const praiseText = praiseCol >= 0 ? String(row[praiseCol] || '').trim() : '';
+    const normalText = normalCol >= 0 ? String(row[normalCol] || '').trim() : '';
+    const complaintText = complaintCol >= 0 ? String(row[complaintCol] || '').trim() : '';
+    const improveText = colImprove >= 0 ? String(row[colImprove] || '').trim() : '';
+    const evalTypeText = colType >= 0 ? String(row[colType] || '').trim() : '';
+    const evalTimeRaw = colEvalTime >= 0 ? String(row[colEvalTime] || '').trim() : '';
+    const evaluator = colEvaluator >= 0 ? String(row[colEvaluator] || '').trim() : '';
+
+    const hasPraise = !isEmptyContent(praiseText);
+    const hasNormal = !isEmptyContent(normalText);
+    const hasComplaint = !isEmptyContent(complaintText);
+
+    let evalType = 'normal';
+    const selectedPraise = evalTypeText.includes('客赞') || evalTypeText.includes('表扬');
+    const selectedComplaint = evalTypeText.includes('客诉') || evalTypeText.includes('投诉');
+    const selectedNormal = evalTypeText.includes('平常') || evalTypeText.includes('陈述现状');
+    if (selectedPraise && selectedComplaint) evalType = 'both';
+    else if (selectedPraise) evalType = 'praise';
+    else if (selectedComplaint) evalType = 'complaint';
+    else if (selectedNormal) evalType = 'normal';
+    else if (hasPraise && hasComplaint) evalType = 'both';
+    else if (hasPraise) evalType = 'praise';
+    else if (hasComplaint) evalType = 'complaint';
+
+    let evalDate = null;
+    if (evalTimeRaw) {
+      const m = evalTimeRaw.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+      if (m) evalDate = `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+    }
+
+    const storeName = extractStoreName(storeRaw);
+
+    rawData.push({
+      rowIndex: r + 1,
+      storeRaw, storeName, evalDate, evalTimeRaw,
+      evaluator,
+      evalType, hasPraise, hasNormal, hasComplaint,
+      praiseText, normalText, complaintText, improveText,
+      matchedCode: '', matchedName: '', matchMethod: '',
+    });
+  }
+
+  debugLines.push(`解析结果: ${rawData.length} 条记录`);
+  showDebug();
+
+  if (rawData.length === 0) {
+    document.getElementById('statusData').textContent =
+      `⚠️ 表头已识别但无数据行（数据从第${headerRowIdx+2}行开始，共${rows.length}行）`;
+    document.getElementById('zoneData').classList.remove('loaded');
+  }
+}
+
+function isEmptyContent(s) {
+  if (!s) return true;
+  const t = s.replace(/[\s\n\r]/g, '');
+  return EMPTY_VALUES.has(t);
+}
+
+// ==================== 提取门店名称（精确匹配用）====================
+function extractStoreName(storeRaw) {
+  const lines = storeRaw.split(/[\n\r]+/).filter(Boolean);
+  const line = lines[0] || storeRaw;
+
+  const seps = ['‐', '–', '—', '-', '－'];
+  let bestParts = null;
+
+  for (const sep of seps) {
+    const parts = line.split(sep).map(s => s.trim()).filter(Boolean);
+    if (parts.length >= 3 && (!bestParts || parts.length > bestParts.length)) {
+      bestParts = parts;
+    }
+  }
+
+  if (!bestParts || bestParts.length < 3) {
+    return line.trim();
+  }
+
+  // 标准格式：人名-人名-门店名-人名，第3段为门店名称
+  return bestParts[2];
+}
+
+// ==================== 解析架构文件（支持与现有数据合并覆盖）====================
+function parseArchFile(rows) {
+  debugLines = debugLines.filter(l => !l.startsWith('🏗️'));
+
+  if (!rows || rows.length < 2) {
+    showToast('❌ 架构文件内容为空（少于2行）', 'error');
+    debugLines.push('🏗️ 架构：rows为空或少于2行');
+    showDebug();
+    return;
+  }
+
+  debugLines.push(`🏗️ 架构文件共 ${rows.length} 行，前3行预览：`);
+  for (let i = 0; i < Math.min(3, rows.length); i++) {
+    const preview = (rows[i] || []).map(c => String(c || '').substring(0, 40)).join(' | ');
+    debugLines.push(`  行${i+1}: ${preview || '(空)'}`);
+  }
+
+  let headerRowIdx = -1;
+  let header = [];
+
+  for (let scan = 0; scan < Math.min(10, rows.length); scan++) {
+    const row = rows[scan];
+    if (!row || !row.length) continue;
+    const rowStr = row.map(c => String(c || '')).join(' ');
+    const hasName = rowStr.includes('门店名称');
+    const hasCode = rowStr.includes('门店编号') || rowStr.includes('门店编码');
+    if (hasName && hasCode) {
+      headerRowIdx = scan;
+      header = row.map(h => String(h || '').trim());
+      debugLines.push(`🏗️ 找到表头：行${scan+1}，共${header.length}列`);
+      break;
+    }
+  }
+
+  if (headerRowIdx < 0) {
+    showToast('❌ 未找到表头行（需包含"门店名称"和"门店编号/编码"列）', 'error');
+    showDebug();
+    return;
+  }
+
+  function findCol(keywords) {
+    for (let i = 0; i < header.length; i++) {
+      const h = header[i];
+      for (const kw of keywords) {
+        if (h.includes(kw)) return i;
+      }
+    }
+    return -1;
+  }
+
+  const colName = findCol(['门店名称']);
+  const colCode = findCol(['门店编号', '门店编码']);
+
+  debugLines.push(`🏗️ 列索引：名称列=${colName}(${colName>=0?header[colName]:'?'})，编号列=${colCode}(${colCode>=0?header[colCode]:'?'})`);
+
+  if (colName < 0 || colCode < 0) {
+    showToast(`❌ 列未找到：名称列=${colName}，编号列=${colCode}`, 'error');
+    showDebug();
+    return;
+  }
+
+  // 从现有数据构建名称→条目的映射（用于合并）
+  const existingMap = new Map();
+  for (const s of archList) {
+    existingMap.set(s.name, s);
+  }
+
+  let newCount = 0;
+  let overwriteCount = 0;
+  let skippedEmpty = 0;
+  let skippedNoCode = 0;
+
+  for (let r = headerRowIdx + 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (!row || row.every(c => c === '' || c === null || c === undefined)) {
+      skippedEmpty++;
+      continue;
+    }
+
+    const name = String(row[colName] || '').trim();
+    const code = String(row[colCode] || '').trim();
+
+    if (!name || !code) {
+      skippedNoCode++;
+      continue;
+    }
+
+    const entry = { name, code, rowIndex: r + 1 };
+
+    if (existingMap.has(name)) {
+      // 同名覆盖
+      const old = existingMap.get(name);
+      if (old.code !== code) {
+        overwriteCount++;
+        debugLines.push(`🏗️ 覆盖：${name}：${old.code} → ${code}`);
+      }
+    } else {
+      newCount++;
+    }
+    existingMap.set(name, entry);
+  }
+
+  // 重建 archList 和 archMap
+  archList = Array.from(existingMap.values());
+  archMap = new Map();
+  for (const s of archList) {
+    archMap.set(s.name, s);
+  }
+
+  debugLines.push(`🏗️ 合并结果：共${archList.length}家（新增${newCount}，覆盖${overwriteCount}，跳过空行${skippedEmpty}，跳过无名称/编号${skippedNoCode}）`);
+  showDebug();
+
+  if (archList.length === 0) {
+    showToast(`⚠️ 解析到0家门店（空行${skippedEmpty}，无名称/编号${skippedNoCode}）`, 'error');
+  }
+}
+
+// ==================== 门店匹配（仅精确名称匹配）====================
+function matchStore(storeName) {
+  if (!storeName) {
+    return { code: '', name: '', method: 'none' };
+  }
+
+  if (archMap.has(storeName)) {
+    const entry = archMap.get(storeName);
+    return { code: entry.code, name: entry.name, method: 'exact' };
+  }
+
+  return { code: '', name: '', method: 'none' };
+}
+
+// ==================== 执行匹配 ====================
+function doMatch() {
+  matchResults = [];
+
+  for (const item of rawData) {
+    const match = matchStore(item.storeName);
+
+    matchResults.push({
+      ...item,
+      matchedCode: match.code,
+      matchedName: match.name,
+      matchMethod: match.method,
+    });
+  }
+
+  const exactCount = matchResults.filter(r => r.matchMethod === 'exact').length;
+  const noneCount = matchResults.filter(r => r.matchMethod === 'none').length;
+
+  const summary = document.getElementById('matchSummary');
+  summary.innerHTML = `
+    ✅ 精确匹配完成：<span style="color:#059669;">成功 ${exactCount}</span>
+    ${noneCount > 0 ? ` | <span style="color:#dc2626;">未匹配 ${noneCount}</span>` : ''}
+    <span style="color:#64748b;font-weight:400;font-size:.82rem;margin-left:8px;">（基于浏览器存储的 ${archList.length} 家门店架构）</span>
+  `;
+  summary.classList.remove('hidden');
+
+  const warnBox = document.getElementById('unmatchedWarning');
+  if (noneCount > 0) {
+    const unmatchedStores = [...new Set(
+      matchResults.filter(r => r.matchMethod === 'none').map(r => r.storeName || r.storeRaw)
+    )];
+    warnBox.innerHTML = `
+      <strong>⚠️ 以下门店未能精确匹配到编号：</strong><br>
+      ${unmatchedStores.map(s => `· ${escHtml(s)}`).join('<br>')}<br>
+      <span style="color:#92400e;font-size:.8rem;">请更新架构表（重新导入将合并覆盖），确保门店名称与问卷中第3段门店名完全一致。</span>
+    `;
+    warnBox.classList.remove('hidden');
+  } else {
+    warnBox.classList.add('hidden');
+  }
+
+  document.getElementById('resultSection').classList.remove('hidden');
+  setDefaultDateRange();
+  applyFilters();
+}
+
+// ==================== 日期设置 ====================
+function setDefaultDateRange() {
+  const dates = matchResults.filter(r => r.evalDate).map(r => r.evalDate).sort();
+  if (dates.length > 0) {
+    document.getElementById('dateFrom').value = dates[0];
+    document.getElementById('dateTo').value = dates[dates.length - 1];
+    document.getElementById('dateRangeHint').textContent =
+      `数据范围：${dates[0]} ~ ${dates[dates.length - 1]}`;
+  }
+}
+
+function clearDateFilter() {
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  applyFilters();
+}
+
+// ==================== 筛选 & 渲染 ====================
+function applyFilters() {
+  const filtered = getFilteredItems();
+  renderStats(filtered);
+  renderTable(filtered);
+}
+
+function renderStats(filtered) {
+  const praiseCount = filtered.filter(r => r.evalType === 'praise' || r.evalType === 'both').length;
+  const complaintCount = filtered.filter(r => r.evalType === 'complaint' || r.evalType === 'both').length;
+  const bothCount = filtered.filter(r => r.evalType === 'both').length;
+  const normalCount = filtered.filter(r => r.evalType === 'normal').length;
+
+  const bar = document.getElementById('statsBar');
+  bar.innerHTML = `
+    <div class="stat-tag all ${filterType==='all'?'active':''}" onclick="setFilter('all')">
+      📊 全部 <b>${filtered.length}</b>
+    </div>
+    <div class="stat-tag praise ${filterType==='praise'?'active':''}" onclick="setFilter('praise')">
+      👍 客赞 <b>${praiseCount}</b>
+    </div>
+    <div class="stat-tag complaint ${filterType==='complaint'?'active':''}" onclick="setFilter('complaint')">
+      👎 客诉 <b>${complaintCount}</b>
+    </div>
+    ${bothCount > 0 ? `
+    <div class="stat-tag both ${filterType==='both'?'active':''}" onclick="setFilter('both')">
+      🔄 客赞+客诉 <b>${bothCount}</b>
+    </div>` : ''}
+    <div class="stat-tag normal ${filterType==='normal'?'active':''}" onclick="setFilter('normal')">
+      😐 平常 <b>${normalCount}</b>
+    </div>
+  `;
+
+  document.getElementById('resultCount').textContent = `显示 ${filtered.length} 条记录`;
+}
+
+function setFilter(type) {
+  filterType = type;
+  applyFilters();
+  autoCopyCodes();
+}
+
+function buildContentSummary(r, maxLen) {
+  let parts = [];
+  if (r.hasPraise) {
+    parts.push(`<div style="margin-bottom:2px;">👍 <span style="color:#059669;">客赞：</span>${escHtml(truncate(r.praiseText, maxLen))}</div>`);
+  }
+  if (r.hasNormal) {
+    parts.push(`<div style="margin-bottom:2px;">😐 <span style="color:#d97706;">平常：</span>${escHtml(truncate(r.normalText, maxLen))}</div>`);
+  }
+  if (r.hasComplaint) {
+    parts.push(`<div style="margin-bottom:2px;">👎 <span style="color:#dc2626;">客诉：</span>${escHtml(truncate(r.complaintText, maxLen))}</div>`);
+  }
+  if (parts.length === 0) {
+    return `<span class="text-muted">${escHtml(truncate(r.improveText || '（无内容）', maxLen || 50))}</span>`;
+  }
+  return parts.join('');
+}
+
+function renderTable(filtered) {
+  const tbody = document.getElementById('resultBody');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:40px;color:var(--gray);">暂无匹配结果，请调整筛选条件</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((r, i) => {
+    const typeMap = {
+      'both':      ['客赞+客诉', 'tag-both'],
+      'praise':    ['客赞',      'tag-praise'],
+      'complaint': ['客诉',      'tag-complaint'],
+      'normal':    ['平常',      'tag-normal'],
+    };
+    const [tagText, tagClass] = typeMap[r.evalType] || ['未知', ''];
+
+    const rowClass = r.matchMethod === 'none' ? 'row-unmatched' : '';
+
+    return `
+      <tr class="${rowClass}">
+        <td class="text-muted">${i + 1}</td>
+        <td style="white-space:nowrap;font-variant-numeric:tabular-nums;">${r.evalDate || '-'}</td>
+        <td>
+          <div>${escHtml(r.storeName || r.storeRaw)}</div>
+        </td>
+        <td style="font-weight:700;font-family:'SF Mono','Consolas',monospace;letter-spacing:.3px;">
+          ${r.matchedCode || '<span style="color:#dc2626;">未匹配</span>'}
+        </td>
+        <td><span class="tag ${tagClass}">${tagText}</span></td>
+        <td>${escHtml(r.evaluator)}</td>
+        <td>${buildContentSummary(r, 80)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ==================== 导出功能 ====================
+function getFilteredItems() {
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo = document.getElementById('dateTo').value;
+  const searchText = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  let filtered = [...matchResults];
+
+  if (dateFrom) filtered = filtered.filter(r => r.evalDate && r.evalDate >= dateFrom);
+  if (dateTo) filtered = filtered.filter(r => r.evalDate && r.evalDate <= dateTo);
+
+  if (filterType === 'praise') {
+    filtered = filtered.filter(r => r.evalType === 'praise' || r.evalType === 'both');
+  } else if (filterType === 'complaint') {
+    filtered = filtered.filter(r => r.evalType === 'complaint' || r.evalType === 'both');
+  } else if (filterType === 'normal') {
+    filtered = filtered.filter(r => r.evalType === 'normal');
+  } else if (filterType === 'both') {
+    filtered = filtered.filter(r => r.evalType === 'both');
+  }
+
+  if (searchText) {
+    filtered = filtered.filter(r =>
+      (r.storeRaw && r.storeRaw.toLowerCase().includes(searchText)) ||
+      (r.storeName && r.storeName.toLowerCase().includes(searchText)) ||
+      (r.matchedCode && r.matchedCode.toLowerCase().includes(searchText)) ||
+      (r.matchedName && r.matchedName.toLowerCase().includes(searchText)) ||
+      (r.evaluator && r.evaluator.toLowerCase().includes(searchText))
+    );
+  }
+
+  return filtered;
+}
+
+function copyCodes(type) {
+  const codes = getFilteredUniqueCodes(type === 'all' ? null : type);
+  doCopy(codes, type);
+}
+
+function autoCopyCodes() {
+  const typeOverride = filterType === 'all' ? null :
+    filterType === 'praise' ? 'praise' :
+    filterType === 'complaint' ? 'complaint' :
+    filterType === 'normal' ? 'normal' :
+    filterType === 'both' ? 'both' : null;
+  const codes = getFilteredUniqueCodes(typeOverride);
+  doCopy(codes, 'auto');
+}
+
+function getFilteredUniqueCodes(typeOverride) {
+  let items = getFilteredItems();
+  if (typeOverride === 'praise') {
+    items = items.filter(r => r.evalType === 'praise' || r.evalType === 'both');
+  } else if (typeOverride === 'complaint') {
+    items = items.filter(r => r.evalType === 'complaint' || r.evalType === 'both');
+  } else if (typeOverride === 'normal') {
+    items = items.filter(r => r.evalType === 'normal');
+  } else if (typeOverride === 'both') {
+    items = items.filter(r => r.evalType === 'both');
+  }
+  const codedItems = items.filter(r => r.matchedCode);
+  return [...new Set(codedItems.map(r => r.matchedCode))];
+}
+
+function doCopy(codes, type) {
+  const text = codes.join('\n');
+  document.getElementById('copyBox').value = text;
+
+  if (codes.length === 0) {
+    if (type !== 'auto') showToast('⚠️ 没有可复制的门店编号', 'error');
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    const labelMap = { praise: '客赞', complaint: '客诉', normal: '平常', both: '客赞+客诉' };
+    const label = labelMap[type] || '';
+    const msg = label ? `✅ 已复制 ${codes.length} 个${label}门店编号！` : `✅ 已复制 ${codes.length} 个门店编号！`;
+    showToast(msg, 'success');
+  }).catch(() => {
+    if (type !== 'auto') showToast('复制失败，请手动复制下方文本框', 'error');
+  });
+}
+
+function exportCSV() {
+  const filtered = getFilteredItems();
+
+  if (filtered.length === 0) {
+    showToast('⚠️ 没有可导出的数据', 'error');
+    return;
+  }
+
+  const header = ['序号', '评估时间', '门店名称', '门店原始字段', '门店编号', '类型', '评估人', '客赞内容', '平常内容', '客诉内容', '改善机会点'];
+
+  const rows = filtered.map((r, i) => [
+    i + 1,
+    r.evalDate || '',
+    r.storeName,
+    r.storeRaw,
+    r.matchedCode,
+    TYPE_MAP[r.evalType] || '',
+    r.evaluator,
+    r.hasPraise ? r.praiseText : '',
+    r.hasNormal ? r.normalText : '',
+    r.hasComplaint ? r.complaintText : '',
+    r.improveText,
+  ]);
+
+  const BOM = '﻿';
+  const csvContent = BOM + [header, ...rows]
+    .map(row => row.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(','))
+    .join('\n');
+
+  downloadBlob(csvContent, `走店组客赞客诉_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+  showToast(`✅ 已导出 ${filtered.length} 条记录为 CSV`, 'success');
+}
+
+function exportXLSX() {
+  const filtered = getFilteredItems();
+
+  if (filtered.length === 0) {
+    showToast('⚠️ 没有可导出的数据', 'error');
+    return;
+  }
+
+  const header = ['序号', '评估时间', '门店名称', '门店原始字段', '门店编号', '类型', '评估人', '客赞内容', '平常内容', '客诉内容', '改善机会点'];
+
+  const rows = filtered.map((r, i) => [
+    i + 1,
+    r.evalDate || '',
+    r.storeName,
+    r.storeRaw,
+    r.matchedCode,
+    TYPE_MAP[r.evalType] || '',
+    r.evaluator,
+    r.hasPraise ? r.praiseText : '',
+    r.hasNormal ? r.normalText : '',
+    r.hasComplaint ? r.complaintText : '',
+    r.improveText,
+  ]);
+
+  const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+  ws['!cols'] = [
+    { wch: 6 }, { wch: 12 }, { wch: 20 }, { wch: 30 }, { wch: 15 },
+    { wch: 10 }, { wch: 10 }, { wch: 40 }, { wch: 40 }, { wch: 40 }, { wch: 30 }
+  ];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '客赞客诉数据');
+  XLSX.writeFile(wb, `走店组客赞客诉_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast(`✅ 已导出 ${filtered.length} 条记录为 Excel`, 'success');
+}
+
+function exportHTML() {
+  const filtered = getFilteredItems();
+
+  if (filtered.length === 0) {
+    showToast('⚠️ 没有可导出的数据', 'error');
+    return;
+  }
+
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo = document.getElementById('dateTo').value;
+  const filterLabel = filterType === 'all' ? '全部' : (TYPE_MAP[filterType] || '全部');
+  const exportTime = new Date().toLocaleString('zh-CN');
+
+  const praiseCount = filtered.filter(r => r.evalType === 'praise' || r.evalType === 'both').length;
+  const complaintCount = filtered.filter(r => r.evalType === 'complaint' || r.evalType === 'both').length;
+  const normalCount = filtered.filter(r => r.evalType === 'normal').length;
+  const matchedCount = filtered.filter(r => r.matchMethod === 'exact').length;
+
+  const rowsHtml = filtered.map((r, i) => {
+    const typeClass = {
+      praise: 'type-praise', complaint: 'type-complaint',
+      normal: 'type-normal', both: 'type-both'
+    }[r.evalType] || '';
+
+    const contentBlocks = [];
+    if (r.hasPraise) {
+      contentBlocks.push(`<div class="content-block praise"><span class="label">客赞</span><p>${escHtml(r.praiseText)}</p></div>`);
+    }
+    if (r.hasNormal) {
+      contentBlocks.push(`<div class="content-block normal"><span class="label">平常</span><p>${escHtml(r.normalText)}</p></div>`);
+    }
+    if (r.hasComplaint) {
+      contentBlocks.push(`<div class="content-block complaint"><span class="label">客诉</span><p>${escHtml(r.complaintText)}</p></div>`);
+    }
+    if (contentBlocks.length === 0) {
+      contentBlocks.push(`<div class="content-block empty"><span class="label">内容</span><p>${escHtml(r.improveText || '（无内容）')}</p></div>`);
+    }
+
+    return `
+      <tr class="${r.matchMethod === 'none' ? 'unmatched' : ''}">
+        <td class="num">${i + 1}</td>
+        <td class="date">${escHtml(r.evalDate || '-')}</td>
+        <td class="store">
+          <div class="store-name">${escHtml(r.storeName || r.storeRaw)}</div>
+        </td>
+        <td class="code">${r.matchedCode ? escHtml(r.matchedCode) : '<span class="no-match">未匹配</span>'}</td>
+        <td><span class="type-tag ${typeClass}">${TYPE_MAP[r.evalType] || ''}</span></td>
+        <td>${escHtml(r.evaluator)}</td>
+      </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>走店组客赞客诉提取报告 - ${exportTime}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #f1f5f9; color: #1e293b; line-height: 1.6; padding: 32px 20px;
+  }
+  .report { max-width: 1400px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.08); overflow: hidden; }
+  .report-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #fff; padding: 32px 40px;
+  }
+  .report-header h1 { font-size: 1.75rem; margin-bottom: 8px; }
+  .report-header .meta { opacity: .9; font-size: .9rem; }
+  .summary {
+    display: flex; flex-wrap: wrap; gap: 12px; padding: 24px 40px;
+    background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+  }
+  .summary-card {
+    flex: 1; min-width: 120px; background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 14px 18px; text-align: center;
+  }
+  .summary-card .num { font-size: 1.5rem; font-weight: 700; color: #4f46e5; }
+  .summary-card .label { font-size: .8rem; color: #64748b; margin-top: 2px; }
+  .summary-card.praise .num { color: #059669; }
+  .summary-card.complaint .num { color: #dc2626; }
+  .summary-card.normal .num { color: #d97706; }
+  .table-wrap { padding: 0 24px 32px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 16px; }
+  th {
+    background: #f1f5f9; padding: 12px 14px; text-align: left;
+    font-weight: 600; color: #475569; border-bottom: 2px solid #cbd5e1; white-space: nowrap;
+  }
+  td { padding: 14px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:hover td { background: #fafbfc; }
+  tr.unmatched td { background: #fffbeb; }
+  .num { color: #94a3b8; text-align: center; width: 40px; }
+  .date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .store-name { font-weight: 600; }
+  .code { font-family: 'SF Mono', Consolas, monospace; font-weight: 700; letter-spacing: .3px; }
+  .no-match { color: #dc2626; font-weight: 600; }
+  .type-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: .75rem; font-weight: 600; white-space: nowrap;
+  }
+  .type-praise { background: #d1fae5; color: #059669; }
+  .type-complaint { background: #fee2e2; color: #dc2626; }
+  .type-normal { background: #fef3c7; color: #d97706; }
+  .type-both { background: #ede9fe; color: #7c3aed; }
+  .content-cell { min-width: 280px; max-width: 480px; }
+  .content-block { margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; background: #f8fafc; }
+  .content-block:last-child { margin-bottom: 0; }
+  .content-block .label { font-size: .72rem; font-weight: 700; display: block; margin-bottom: 4px; }
+  .content-block.praise { background: #ecfdf5; } .content-block.praise .label { color: #059669; }
+  .content-block.normal { background: #fffbeb; } .content-block.normal .label { color: #d97706; }
+  .content-block.complaint { background: #fef2f2; } .content-block.complaint .label { color: #dc2626; }
+  .content-block p { font-size: .84rem; white-space: pre-wrap; word-break: break-word; }
+  .footer { text-align: center; padding: 20px; color: #94a3b8; font-size: .8rem; border-top: 1px solid #e2e8f0; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .report { box-shadow: none; }
+    tr:hover td { background: inherit; }
+  }
+</style>
+</head>
+<body>
+<div class="report">
+  <div class="report-header">
+    <h1>走店组客赞客诉提取报告</h1>
+    <div class="meta">
+      导出时间：${escHtml(exportTime)} &nbsp;|&nbsp;
+      筛选类型：${escHtml(filterLabel)} &nbsp;|&nbsp;
+      日期范围：${escHtml(dateFrom || '不限')} ~ ${escHtml(dateTo || '不限')} &nbsp;|&nbsp;
+      匹配方式：门店名称精确匹配
+    </div>
+  </div>
+  <div class="summary">
+    <div class="summary-card"><div class="num">${filtered.length}</div><div class="label">总记录</div></div>
+    <div class="summary-card"><div class="num">${matchedCount}</div><div class="label">已匹配编号</div></div>
+    <div class="summary-card praise"><div class="num">${praiseCount}</div><div class="label">客赞</div></div>
+    <div class="summary-card normal"><div class="num">${normalCount}</div><div class="label">平常</div></div>
+    <div class="summary-card complaint"><div class="num">${complaintCount}</div><div class="label">客诉</div></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>评估时间</th><th>门店名称</th><th>门店编号</th>
+          <th>类型</th><th>评估人</th><th>内容详情</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  </div>
+  <div class="footer">走店组客赞客诉提取工具 · 共 ${filtered.length} 条记录</div>
+</div>
+</body>
+</html>`;
+
+  downloadBlob(html, `走店组客赞客诉报告_${new Date().toISOString().slice(0,10)}.html`, 'text/html;charset=utf-8;');
+  showToast(`✅ 已下载排版 HTML 报告（${filtered.length} 条）`, 'success');
+}
+
+function downloadBlob(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ==================== 工具函数 ====================
+function showDebug() {
+  debugLines.forEach(l => console.log('[走店组客赞客诉]', l));
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function truncate(s, maxLen) {
+  if (!s) return '';
+  return s.length > maxLen ? s.slice(0, maxLen) + '…' : s;
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast toast-${type} show`;
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ==================== 拖拽上传支持 ====================
+(function initDragDrop() {
+  const zoneData = document.getElementById('zoneData');
+  if (zoneData) {
+    zoneData.addEventListener('dragover', e => { e.preventDefault(); zoneData.style.borderColor = 'var(--primary)'; });
+    zoneData.addEventListener('dragleave', e => { e.preventDefault(); zoneData.style.borderColor = ''; });
+    zoneData.addEventListener('drop', e => {
+      e.preventDefault();
+      zoneData.style.borderColor = '';
+      if (e.dataTransfer.files.length > 0) {
+        document.getElementById('fileData').files = e.dataTransfer.files;
+        handleDataFile(document.getElementById('fileData'));
+      }
+    });
+  }
+})();
+
+// ==================== 页面启动 ====================
+loadArchFromStorage();
+</script>
+</body>
+</html>

@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表格合并工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* 禁止文字选择 */
+        body, .container, .upload-area, .file-item, .option-item, .action-btn {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        /* 允许选择输入框和可编辑区域 */
+        input, select, textarea, .sheet-name {
+            user-select: auto;
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 35px;
+            gap: 35px;
+        }
+        
+        .upload-section {
+            flex: 1;
+            min-width: 380px;
+            background: #f9fafc;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stats-section {
+            flex: 1.5;
+            min-width: 450px;
+            background: #f9fafc;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            color: #182848;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eaeef5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #4b6cb7;
+        }
+        
+        .upload-area {
+            border: 3px dashed #c3cfe2;
+            border-radius: 10px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            border-color: #4b6cb7;
+            background-color: #f0f4ff;
+        }
+        
+        .upload-area i {
+            font-size: 2.5rem;
+            color: #4b6cb7;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area h3 {
+            margin-bottom: 10px;
+            color: #182848;
+            font-size: 1.2rem;
+        }
+        
+        .upload-area p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .upload-btn {
+            background: #4b6cb7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            font-size: 1rem;
+        }
+        
+        .upload-btn:hover {
+            background: #3a5699;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .selected-files {
+            margin-top: 25px;
+        }
+        
+        .file-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .file-item {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #4b6cb7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .file-header:hover {
+            background: #f9fafc;
+        }
+        
+        .file-name-container {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            overflow: hidden;
+            min-width: 0;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.95rem;
+            margin-right: 10px;
+            max-width: 80%;
+        }
+        
+        .file-size {
+            color: #777;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            margin-right: 15px;
+        }
+        
+        .remove-file {
+            color: #ff6b6b;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        
+        .file-sheets {
+            padding: 0 15px 15px 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .sheets-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 15px 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .select-all {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            color: #4b6cb7;
+            cursor: pointer;
+        }
+        
+        .sheet-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        
+        .sheet-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            background: #f9fafc;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        
+        .sheet-item:hover {
+            background: #f0f4ff;
+        }
+        
+        .sheet-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        
+        .sheet-name {
+            font-size: 0.85rem;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .action-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .process-btn {
+            background: #4b6cb7;
+            color: white;
+        }
+        
+        .process-btn:hover {
+            background: #3a5699;
+            transform: translateY(-2px);
+        }
+        
+        .download-btn {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .download-btn:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .clear-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .clear-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .stats-container {
+            margin-top: 10px;
+        }
+        
+        .total-stats {
+            display: flex;
+            justify-content: space-between;
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            color: #4b6cb7;
+            font-weight: 700;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .sources-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .source-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid #4b6cb7;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+        }
+        
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        
+        .source-name {
+            font-weight: 600;
+            color: #182848;
+            font-size: 1.05rem;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 15px;
+            max-width: 100%;
+        }
+        
+        .source-rows {
+            background: #4b6cb7;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .source-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .column-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .column-warning {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .column-ok {
+            color: #2ecc71;
+            font-weight: 600;
+        }
+        
+        .warning-box {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .warning-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ff9800;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .warning-content {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4b6cb7;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-stats {
+            text-align: center;
+            padding: 40px 20px;
+            color: #777;
+        }
+        
+        .empty-stats i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #c3cfe2;
+        }
+        
+        .empty-stats h3 {
+            margin-bottom: 10px;
+            color: #182848;
+        }
+        
+        /* 选项样式 - 优化布局 */
+        .options-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .option-title {
+            font-weight: 600;
+            color: #182848;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .option-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .option-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+        
+        .option-label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #333;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .option-description {
+            font-size: 0.85rem;
+            color: #666;
+            margin-left: 30px;
+            margin-top: 10px;
+            line-height: 1.5;
+            width: 100%;
+            white-space: normal;
+        }
+        
+        .option-hint {
+            display: inline-block;
+            background: #f0f4ff;
+            color: #4b6cb7;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+        
+        .skip-rows-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 8px;
+        }
+        
+        .skip-rows-select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #c3cfe2;
+            background: white;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            min-width: 60px;
+        }
+        
+        .skip-rows-select:disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        .chevron {
+            transition: transform 0.3s;
+            font-size: 0.8rem;
+            color: #4b6cb7;
+        }
+        
+        .file-item.expanded .chevron {
+            transform: rotate(180deg);
+        }
+        
+        @media (max-width: 1000px) {
+            .main-content {
+                flex-direction: column;
+                padding: 25px;
+            }
+            
+            .upload-section, .stats-section {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .source-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .source-rows {
+                margin-top: 5px;
+            }
+            
+            .sheet-list {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+            
+            .option-label {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .skip-rows-option {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-table"></i> 表格合并工具</h1>
+            <p class="subtitle">上传多个Excel文件，选择指定工作表合并。显示每个来源的数据条数，检查列数差异，自动删除空行。</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <h2 class="section-title"><i class="fas fa-upload"></i> 上传表格文件</h2>
+                
+                <div class="upload-area" id="dropArea">
+                    <i class="fas fa-file-excel"></i>
+                    <h3>拖拽文件到此处 或 点击选择文件</h3>
+                    <p>支持 Excel (.xlsx, .xls) 和 CSV (.csv) 格式</p>
+                    <p>可一次选择多个文件</p>
+                    <button class="upload-btn" id="browseBtn">
+                        选择文件
+                    </button>
+                </div>
+                
+                <input type="file" class="file-input" id="fileInput" multiple accept=".xlsx,.xls,.csv">
+                
+                <div class="selected-files">
+                    <h3>已选择的文件 (<span id="fileCount">0</span>)</h3>
+                    <div class="file-list" id="fileList">
+                        <!-- 文件列表将在这里动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 选项区域 -->
+                <div class="options-section">
+                    <div class="option-title">
+                        <i class="fas fa-cog"></i> 合并选项
+                    </div>
+                    
+                    <div class="option-item">
+                        <input type="checkbox" id="keepSourceColumn" class="option-checkbox" checked>
+                        <label for="keepSourceColumn" class="option-label">
+                            保留来源列
+                            <span class="option-hint">推荐</span>
+                        </label>
+                    </div>
+                    
+                    <div class="option-item">
+                        <input type="checkbox" id="removeEmptyRows" class="option-checkbox" checked>
+                        <label for="removeEmptyRows" class="option-label">
+                            自动删除空行
+                            <span class="option-hint">推荐</span>
+                        </label>
+                    </div>
+                    
+                    <div class="option-item">
+                        <input type="checkbox" id="skipRowsCheckbox" class="option-checkbox">
+                        <label for="skipRowsCheckbox" class="option-label">
+                            忽略每个工作表的前
+                            <div class="skip-rows-option">
+                                <select id="skipRowsSelect" class="skip-rows-select" disabled>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                </select>
+                                行
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn process-btn" id="processBtn">
+                        <i class="fas fa-cogs"></i> 合并表格
+                    </button>
+                    <button class="action-btn download-btn" id="downloadBtn" disabled>
+                        <i class="fas fa-download"></i> 下载合并结果
+                    </button>
+                    <button class="action-btn clear-btn" id="clearBtn">
+                        <i class="fas fa-trash-alt"></i> 清除全部
+                    </button>
+                </div>
+                
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>正在处理文件，请稍候...</p>
+                </div>
+            </div>
+            
+            <div class="stats-section">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> 合并统计信息</h2>
+                
+                <div class="total-stats" id="totalStats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalFiles">0</div>
+                        <div class="stat-label">文件数量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalSheets">0</div>
+                        <div class="stat-label">工作表数量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalRows">0</div>
+                        <div class="stat-label">总数据行数</div>
+                    </div>
+                </div>
+                
+                <div class="warning-box" id="warningBox">
+                    <div class="warning-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>列数不一致警告</span>
+                    </div>
+                    <div class="warning-content" id="warningContent">
+                        <!-- 警告内容将在这里动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="empty-stats" id="emptyStats">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>暂无统计信息</h3>
+                        <p>请上传表格文件并点击"合并表格"按钮</p>
+                    </div>
+                    
+                    <div class="sources-list" id="sourcesList" style="display: none;">
+                        <!-- 来源列表将在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let selectedFiles = [];
+        let fileSheetInfo = {}; // 存储文件和工作表信息
+        let mergedData = null;
+        let columnWarnings = [];
+        
+        // DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const dropArea = document.getElementById('dropArea');
+        const fileList = document.getElementById('fileList');
+        const fileCount = document.getElementById('fileCount');
+        const processBtn = document.getElementById('processBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const totalStats = document.getElementById('totalStats');
+        const totalFiles = document.getElementById('totalFiles');
+        const totalSheets = document.getElementById('totalSheets');
+        const totalRows = document.getElementById('totalRows');
+        const emptyStats = document.getElementById('emptyStats');
+        const sourcesList = document.getElementById('sourcesList');
+        const warningBox = document.getElementById('warningBox');
+        const warningContent = document.getElementById('warningContent');
+        
+        // 选项相关DOM元素
+        const keepSourceColumnCheckbox = document.getElementById('keepSourceColumn');
+        const removeEmptyRowsCheckbox = document.getElementById('removeEmptyRows');
+        const skipRowsCheckbox = document.getElementById('skipRowsCheckbox');
+        const skipRowsSelect = document.getElementById('skipRowsSelect');
+        
+        // 浏览文件按钮点击事件
+        browseBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // 文件选择变化事件
+        fileInput.addEventListener('change', async (e) => {
+            await handleFiles(e.target.files);
+        });
+        
+        // 拖拽上传功能
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#4b6cb7';
+            dropArea.style.backgroundColor = '#f0f4ff';
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#c3cfe2';
+            dropArea.style.backgroundColor = '';
+        });
+        
+        dropArea.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#c3cfe2';
+            dropArea.style.backgroundColor = '';
+            
+            if (e.dataTransfer.files.length) {
+                await handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        // 忽略行数复选框变化事件
+        skipRowsCheckbox.addEventListener('change', () => {
+            skipRowsSelect.disabled = !skipRowsCheckbox.checked;
+        });
+        
+        // 处理选择的文件
+        async function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // 检查文件类型
+                if (!isValidFileType(file)) {
+                    alert(`文件 "${file.name}" 不是支持的格式。请上传 Excel (.xlsx, .xls) 或 CSV (.csv) 文件。`);
+                    continue;
+                }
+                
+                // 检查文件是否已存在
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                    
+                    // 获取文件的sheet信息
+                    await getFileSheetInfo(file);
+                }
+            }
+            
+            updateFileList();
+        }
+        
+        // 获取文件的sheet信息
+        async function getFileSheetInfo(file) {
+            try {
+                // 读取文件
+                const data = await readFile(file);
+                let workbook;
+                
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    // CSV文件只有一个sheet
+                    workbook = XLSX.read(data, { type: 'binary', raw: true });
+                } else {
+                    workbook = XLSX.read(data, { 
+                        type: 'array',
+                        cellDates: true,
+                        cellNF: false,
+                        cellText: false,
+                        sheetRows: 0  // 读取所有行，不限制
+                    });
+                }
+                
+                // 获取所有sheet名称
+                const sheetNames = workbook.SheetNames;
+                
+                // 为每个sheet创建初始选中状态（默认全选）
+                const sheets = sheetNames.map(sheetName => ({
+                    name: sheetName,
+                    selected: true
+                }));
+                
+                // 存储sheet信息
+                fileSheetInfo[file.name] = {
+                    file: file,
+                    sheets: sheets,
+                    allSelected: true,
+                    workbook: workbook  // 保存workbook以便后续使用
+                };
+                
+            } catch (error) {
+                console.error(`读取文件 ${file.name} 的sheet信息时出错:`, error);
+                // 如果读取失败，使用默认sheet信息
+                fileSheetInfo[file.name] = {
+                    file: file,
+                    sheets: [{ name: 'Sheet1', selected: true }],
+                    allSelected: true
+                };
+            }
+        }
+        
+        // 验证文件类型
+        function isValidFileType(file) {
+            const validTypes = [
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'text/csv',
+                'application/csv'
+            ];
+            
+            const validExtensions = ['.xlsx', '.xls', '.csv'];
+            const fileName = file.name.toLowerCase();
+            
+            // 检查扩展名
+            const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+            
+            // 检查MIME类型（某些浏览器可能不提供正确的MIME类型）
+            return validTypes.includes(file.type) || file.type === '' || hasValidExtension;
+        }
+        
+        // 更新文件列表显示
+        function updateFileList() {
+            fileList.innerHTML = '';
+            fileCount.textContent = selectedFiles.length;
+            
+            if (selectedFiles.length === 0) {
+                fileList.innerHTML = '<p style="text-align: center; color: #777; padding: 20px;">暂无文件</p>';
+                return;
+            }
+            
+            selectedFiles.forEach((file, index) => {
+                const fileInfo = fileSheetInfo[file.name];
+                if (!fileInfo) return;
+                
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item expanded'; // 默认展开
+                fileItem.dataset.index = index;
+                
+                const fileHeader = document.createElement('div');
+                fileHeader.className = 'file-header';
+                
+                // 文件名和大小
+                const fileInfoContainer = document.createElement('div');
+                fileInfoContainer.className = 'file-name-container';
+                
+                const fileName = document.createElement('div');
+                fileName.className = 'file-name';
+                fileName.textContent = file.name;
+                fileName.title = file.name;
+                
+                const fileSize = document.createElement('div');
+                fileSize.className = 'file-size';
+                fileSize.textContent = formatFileSize(file.size);
+                
+                fileInfoContainer.appendChild(fileName);
+                fileInfoContainer.appendChild(fileSize);
+                
+                // 折叠/展开箭头
+                const chevron = document.createElement('i');
+                chevron.className = 'fas fa-chevron-down chevron';
+                
+                // 删除按钮
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-file';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.title = '移除文件';
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectedFiles.splice(index, 1);
+                    delete fileSheetInfo[file.name];
+                    updateFileList();
+                });
+                
+                fileHeader.appendChild(fileInfoContainer);
+                fileHeader.appendChild(chevron);
+                fileHeader.appendChild(removeBtn);
+                
+                // sheet选择区域
+                const fileSheets = document.createElement('div');
+                fileSheets.className = 'file-sheets';
+                fileSheets.style.display = 'block'; // 默认显示
+                
+                const sheetsTitle = document.createElement('div');
+                sheetsTitle.className = 'sheets-title';
+                
+                const sheetsTitleText = document.createElement('span');
+                sheetsTitleText.textContent = '选择工作表:';
+                
+                const selectAllContainer = document.createElement('div');
+                selectAllContainer.className = 'select-all';
+                
+                const selectAllCheckbox = document.createElement('input');
+                selectAllCheckbox.type = 'checkbox';
+                selectAllCheckbox.className = 'sheet-checkbox';
+                selectAllCheckbox.id = `select-all-${index}`;
+                selectAllCheckbox.checked = fileInfo.allSelected;
+                selectAllCheckbox.addEventListener('change', (e) => {
+                    e.stopPropagation();
+                    const allSelected = selectAllCheckbox.checked;
+                    fileInfo.allSelected = allSelected;
+                    
+                    // 更新所有sheet的选中状态
+                    fileInfo.sheets.forEach(sheet => {
+                        sheet.selected = allSelected;
+                    });
+                    
+                    // 更新sheet复选框状态
+                    const sheetCheckboxes = fileSheets.querySelectorAll('.sheet-checkbox:not(#select-all-' + index + ')');
+                    sheetCheckboxes.forEach(cb => {
+                        cb.checked = allSelected;
+                    });
+                });
+                
+                const selectAllLabel = document.createElement('label');
+                selectAllLabel.htmlFor = `select-all-${index}`;
+                selectAllLabel.textContent = '全选';
+                
+                selectAllContainer.appendChild(selectAllCheckbox);
+                selectAllContainer.appendChild(selectAllLabel);
+                
+                sheetsTitle.appendChild(sheetsTitleText);
+                sheetsTitle.appendChild(selectAllContainer);
+                
+                // sheet列表
+                const sheetList = document.createElement('div');
+                sheetList.className = 'sheet-list';
+                
+                fileInfo.sheets.forEach((sheet, sheetIndex) => {
+                    const sheetItem = document.createElement('div');
+                    sheetItem.className = 'sheet-item';
+                    sheetItem.addEventListener('click', (e) => {
+                        // 如果点击的是checkbox，不重复触发
+                        if (e.target.type === 'checkbox') return;
+                        
+                        const checkbox = sheetItem.querySelector('.sheet-checkbox');
+                        checkbox.checked = !checkbox.checked;
+                        
+                        // 触发change事件
+                        const event = new Event('change');
+                        checkbox.dispatchEvent(event);
+                    });
+                    
+                    const sheetCheckbox = document.createElement('input');
+                    sheetCheckbox.type = 'checkbox';
+                    sheetCheckbox.className = 'sheet-checkbox';
+                    sheetCheckbox.id = `sheet-${index}-${sheetIndex}`;
+                    sheetCheckbox.checked = sheet.selected;
+                    sheetCheckbox.addEventListener('change', (e) => {
+                        e.stopPropagation();
+                        sheet.selected = sheetCheckbox.checked;
+                        
+                        // 检查是否所有sheet都被选中
+                        const allSheetsSelected = fileInfo.sheets.every(s => s.selected);
+                        fileInfo.allSelected = allSheetsSelected;
+                        selectAllCheckbox.checked = allSheetsSelected;
+                    });
+                    
+                    const sheetName = document.createElement('span');
+                    sheetName.className = 'sheet-name';
+                    sheetName.textContent = sheet.name;
+                    sheetName.title = sheet.name;
+                    
+                    sheetItem.appendChild(sheetCheckbox);
+                    sheetItem.appendChild(sheetName);
+                    sheetList.appendChild(sheetItem);
+                });
+                
+                fileSheets.appendChild(sheetsTitle);
+                fileSheets.appendChild(sheetList);
+                
+                // 点击文件头展开/折叠sheet列表
+                fileHeader.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-file') || 
+                        e.target.parentElement.classList.contains('remove-file')) {
+                        return;
+                    }
+                    
+                    fileItem.classList.toggle('expanded');
+                    fileSheets.style.display = fileSheets.style.display === 'block' ? 'none' : 'block';
+                });
+                
+                fileItem.appendChild(fileHeader);
+                fileItem.appendChild(fileSheets);
+                fileList.appendChild(fileItem);
+            });
+        }
+        
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // 合并表格按钮点击事件
+        processBtn.addEventListener('click', async () => {
+            if (selectedFiles.length === 0) {
+                alert('请先选择要合并的表格文件！');
+                return;
+            }
+            
+            // 检查是否至少选择了一个sheet
+            let hasSelectedSheet = false;
+            selectedFiles.forEach(file => {
+                const fileInfo = fileSheetInfo[file.name];
+                if (fileInfo && fileInfo.sheets.some(sheet => sheet.selected)) {
+                    hasSelectedSheet = true;
+                }
+            });
+            
+            if (!hasSelectedSheet) {
+                alert('请至少选择一个工作表进行合并！');
+                return;
+            }
+            
+            // 显示加载指示器
+            loadingIndicator.style.display = 'block';
+            processBtn.disabled = true;
+            
+            try {
+                // 重置警告
+                columnWarnings = [];
+                warningBox.style.display = 'none';
+                
+                mergedData = await mergeAllFiles(selectedFiles);
+                displayStats(mergedData.stats);
+                downloadBtn.disabled = false;
+                
+                // 如果有列数不一致的警告，显示警告框
+                if (columnWarnings.length > 0) {
+                    displayColumnWarnings();
+                }
+            } catch (error) {
+                console.error('合并表格时出错:', error);
+                alert('合并表格时出错: ' + error.message);
+            } finally {
+                // 隐藏加载指示器
+                loadingIndicator.style.display = 'none';
+                processBtn.disabled = false;
+            }
+        });
+        
+        // 合并所有文件
+        async function mergeAllFiles(files) {
+            const allData = [];
+            const stats = {
+                sources: [],
+                totalSheets: 0,
+                totalRows: 0,
+                maxColumns: 0,
+                columnCounts: []
+            };
+            
+            // 获取选项设置
+            const keepSourceColumn = keepSourceColumnCheckbox.checked;
+            const removeEmptyRows = removeEmptyRowsCheckbox.checked;
+            const skipRows = skipRowsCheckbox.checked ? parseInt(skipRowsSelect.value) || 0 : 0;
+            
+            // 处理每个文件
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileInfo = fileSheetInfo[file.name];
+                
+                if (!fileInfo) continue;
+                
+                const fileName = file.name.replace(/\.[^/.]+$/, ""); // 去掉扩展名
+                
+                try {
+                    // 读取文件
+                    const data = await readFile(file);
+                    
+                    // 使用已缓存的workbook或重新解析文件
+                    let workbook = fileInfo.workbook;
+                    if (!workbook) {
+                        if (file.name.toLowerCase().endsWith('.csv')) {
+                            workbook = XLSX.read(data, { type: 'binary', raw: true });
+                        } else {
+                            workbook = XLSX.read(data, { 
+                                type: 'array',
+                                cellDates: true,
+                                cellNF: false,
+                                cellText: false,
+                                sheetRows: 0
+                            });
+                        }
+                    }
+                    
+                    // 获取所有sheet名称
+                    const sheetNames = workbook.SheetNames;
+                    
+                    // 处理每个sheet
+                    for (let j = 0; j < sheetNames.length; j++) {
+                        const sheetName = sheetNames[j];
+                        
+                        // 检查是否选中了这个sheet
+                        const sheetInfo = fileInfo.sheets.find(s => s.name === sheetName);
+                        if (!sheetInfo || !sheetInfo.selected) {
+                            continue; // 跳过未选中的sheet
+                        }
+                        
+                        const worksheet = workbook.Sheets[sheetName];
+                        
+                        // 尝试多种方式读取数据
+                        let jsonData = [];
+                        
+                        // 方式1：默认读取
+                        jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '', raw: false });
+                        console.log(`${fileName} - ${sheetName}: 方式1读取 ${jsonData.length} 行`);
+                        
+                        // 方式2：如果方式1没读到足够数据，尝试包含空行
+                        if (jsonData.length <= 1) {
+                            jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                                header: 1, 
+                                defval: '', 
+                                raw: false, 
+                                blankrows: true 
+                            });
+                            console.log(`${fileName} - ${sheetName}: 方式2读取 ${jsonData.length} 行`);
+                        }
+                        
+                        // 方式3：如果还是没数据，尝试强制读取单元格
+                        if (jsonData.length <= 1) {
+                            console.log(`${fileName} - ${sheetName}: 尝试方式3强制读取单元格`);
+                            const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+                            console.log(`  范围: 行${range.s.r}-${range.e.r}, 列${range.s.c}-${range.e.c}`);
+                            
+                            // 强制扩展范围到至少1000行
+                            const maxRow = Math.max(range.e.r, 1000);
+                            
+                            const forcedData = [];
+                            
+                            // 读取每一行
+                            for (let row = range.s.r; row <= maxRow; row++) {
+                                const rowData = [];
+                                let hasData = false;
+                                
+                                for (let col = range.s.c; col <= range.e.c; col++) {
+                                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                                    const cell = worksheet[cellAddress];
+                                    const value = cell ? (cell.v || cell.w || '') : '';
+                                    
+                                    rowData.push(value);
+                                    if (value && String(value).trim() !== '') {
+                                        hasData = true;
+                                    }
+                                }
+                                
+                                if (hasData) {
+                                    forcedData.push(rowData);
+                                }
+                            }
+                            
+                            if (forcedData.length > jsonData.length) {
+                                jsonData = forcedData;
+                                console.log(`  强制读取成功: ${jsonData.length} 行`);
+                            }
+                        }
+                        
+                        // 过滤掉"幽灵行"：检查每行是否至少有一个字段有实际内容
+                        const filteredData = jsonData.filter(row => {
+                            // 检查是否至少有20%的字段有内容
+                            const nonEmptyCount = row.filter(cell => {
+                                return cell !== undefined && cell !== null && cell !== '' && String(cell).trim() !== '';
+                            }).length;
+                            return nonEmptyCount >= Math.max(1, row.length * 0.2);
+                        });
+                        
+                        console.log(`${fileName} - ${sheetName}: 过滤后 ${filteredData.length} 行有效数据`);
+                        
+                        // 检查sheet是否为空（考虑跳过的行数）
+                        if (filteredData.length <= skipRows) {
+                            console.log(`跳过空工作表: ${fileName} - ${sheetName}`);
+                            continue;
+                        }
+                        
+                        // 构建来源标识
+                        let sourceIdentifier;
+                        if (files.length === 1) {
+                            // 只有一个文件，只显示sheet名称
+                            sourceIdentifier = sheetName;
+                        } else {
+                            // 多个文件，显示文件名+sheet名称
+                            sourceIdentifier = `${fileName} - ${sheetName}`;
+                        }
+                        
+                        // 处理数据行（跳过前N行）- 使用过滤后的数据
+                        const headers = filteredData[skipRows] || [];
+                        const rows = filteredData.slice(skipRows + 1).filter(row => row.length > 0); // 过滤完全空的行
+                        
+                        // 统计信息
+                        const columnCount = headers.length;
+                        const rowCount = rows.length;
+                        
+                        // 如果没有数据行，跳过这个sheet
+                        if (rowCount === 0) {
+                            console.log(`跳过无数据的工作表: ${fileName} - ${sheetName}`);
+                            continue;
+                        }
+                        
+                        // 更新最大列数
+                        if (columnCount > stats.maxColumns) {
+                            stats.maxColumns = columnCount;
+                        }
+                        
+                        // 记录列数信息
+                        stats.columnCounts.push({
+                            source: sourceIdentifier,
+                            columns: columnCount
+                        });
+                        
+                        // 检查列数是否一致
+                        if (allData.length > 0 && columnCount !== stats.maxColumns) {
+                            columnWarnings.push({
+                                source: sourceIdentifier,
+                                columns: columnCount,
+                                maxColumns: stats.maxColumns
+                            });
+                        }
+                        
+                        // 根据是否保留来源列处理数据
+                        let processedRows;
+                        let processedHeaders;
+                        
+                        if (keepSourceColumn) {
+                            // 保留来源列：在第一列添加来源标识
+                            processedRows = rows.map(row => {
+                                // 确保行数据与标题长度一致（填充或截断）
+                                let rowData = [...row];
+                                
+                                if (rowData.length < stats.maxColumns) {
+                                    // 填充缺失的列
+                                    while (rowData.length < stats.maxColumns) {
+                                        rowData.push('');
+                                    }
+                                } else if (rowData.length > stats.maxColumns) {
+                                    // 截断多余的列
+                                    rowData = rowData.slice(0, stats.maxColumns);
+                                }
+                                
+                                // 在第一列添加来源标识
+                                return [sourceIdentifier, ...rowData];
+                            });
+                            
+                            // 如果是第一个sheet，添加标题行
+                            if (allData.length === 0) {
+                                // 处理标题行，确保与最大列数一致
+                                processedHeaders = ['来源', ...headers];
+                                
+                                if (processedHeaders.length - 1 < stats.maxColumns) {
+                                    // 填充缺失的列标题
+                                    while (processedHeaders.length - 1 < stats.maxColumns) {
+                                        processedHeaders.push(`列${processedHeaders.length}`);
+                                    }
+                                } else if (processedHeaders.length - 1 > stats.maxColumns) {
+                                    // 截断多余的列标题
+                                    processedHeaders = processedHeaders.slice(0, stats.maxColumns + 1);
+                                }
+                                
+                                allData.push(processedHeaders);
+                            }
+                        } else {
+                            // 不保留来源列：直接合并数据
+                            processedRows = rows.map(row => {
+                                // 确保行数据与标题长度一致（填充或截断）
+                                let rowData = [...row];
+                                
+                                if (rowData.length < stats.maxColumns) {
+                                    // 填充缺失的列
+                                    while (rowData.length < stats.maxColumns) {
+                                        rowData.push('');
+                                    }
+                                } else if (rowData.length > stats.maxColumns) {
+                                    // 截断多余的列
+                                    rowData = rowData.slice(0, stats.maxColumns);
+                                }
+                                
+                                return rowData;
+                            });
+                            
+                            // 如果是第一个sheet，添加标题行
+                            if (allData.length === 0) {
+                                // 处理标题行，确保与最大列数一致
+                                processedHeaders = [...headers];
+                                
+                                if (processedHeaders.length < stats.maxColumns) {
+                                    // 填充缺失的列标题
+                                    while (processedHeaders.length < stats.maxColumns) {
+                                        processedHeaders.push(`列${processedHeaders.length + 1}`);
+                                    }
+                                } else if (processedHeaders.length > stats.maxColumns) {
+                                    // 截断多余的列标题
+                                    processedHeaders = processedHeaders.slice(0, stats.maxColumns);
+                                }
+                                
+                                allData.push(processedHeaders);
+                            }
+                        }
+                        
+                        // 添加处理后的行
+                        allData.push(...processedRows);
+                        
+                        // 添加到统计信息
+                        stats.sources.push({
+                            name: sourceIdentifier,
+                            rows: rowCount,
+                            columns: columnCount,
+                            isConsistent: columnCount === stats.maxColumns
+                        });
+                        
+                        stats.totalSheets++;
+                        stats.totalRows += rowCount;
+                    }
+                } catch (error) {
+                    console.error(`处理文件 ${file.name} 时出错:`, error);
+                    throw new Error(`处理文件 ${file.name} 时出错: ${error.message}`);
+                }
+            }
+            
+            // 删除空行（如果需要）
+            let finalData = allData;
+            if (removeEmptyRows && allData.length > 0) {
+                finalData = removeEmptyRowsFromData(allData, keepSourceColumn);
+                // 更新行数统计
+                const rowsRemoved = allData.length - finalData.length;
+                if (rowsRemoved > 0) {
+                    stats.totalRows -= rowsRemoved;
+                    stats.totalRows += 1; // 标题行
+                }
+            }
+            
+            return {
+                data: finalData,
+                stats: stats,
+                keepSourceColumn: keepSourceColumn,
+                skipRows: skipRows,
+                removeEmptyRows: removeEmptyRows
+            };
+        }
+        
+        // 从数据中删除空行
+        function removeEmptyRowsFromData(data, keepSourceColumn) {
+            if (data.length <= 1) return data; // 只有标题行或空数据
+            
+            const headers = data[0];
+            const rows = data.slice(1);
+            
+            const filteredRows = rows.filter(row => {
+                // 检查行是否为空
+                if (keepSourceColumn) {
+                    // 保留来源列时，检查除第一列外的所有列是否都为空
+                    return row.slice(1).some(cell => {
+                        return cell !== '' && cell !== null && cell !== undefined;
+                    });
+                } else {
+                    // 不保留来源列时，检查所有列是否都为空
+                    return row.some(cell => {
+                        return cell !== '' && cell !== null && cell !== undefined;
+                    });
+                }
+            });
+            
+            return [headers, ...filteredRows];
+        }
+        
+        // 显示列数不一致警告
+        function displayColumnWarnings() {
+            let warningText = '<p>检测到以下工作表的列数不一致：</p><ul style="margin-top: 8px; padding-left: 20px;">';
+            
+            columnWarnings.forEach(warning => {
+                warningText += `<li><strong>${warning.source}</strong>: ${warning.columns} 列 (标准: ${warning.maxColumns} 列)</li>`;
+            });
+            
+            warningText += '</ul><p style="margin-top: 10px;">已自动填充缺失列或截断多余列以保持一致性。</p>';
+            warningContent.innerHTML = warningText;
+            warningBox.style.display = 'block';
+        }
+        
+        // 读取文件内容
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    resolve(e.target.result);
+                };
+                
+                reader.onerror = (e) => {
+                    reject(new Error('读取文件失败'));
+                };
+                
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    reader.readAsBinaryString(file);
+                } else {
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+        }
+        
+        // 显示统计信息
+        function displayStats(stats) {
+            // 隐藏空统计信息
+            emptyStats.style.display = 'none';
+            
+            // 显示总统计
+            totalFiles.textContent = selectedFiles.length;
+            totalSheets.textContent = stats.totalSheets;
+            totalRows.textContent = stats.totalRows;
+            totalStats.style.display = 'flex';
+            
+            // 显示来源列表
+            sourcesList.innerHTML = '';
+            sourcesList.style.display = 'block';
+            
+            stats.sources.forEach(source => {
+                const sourceItem = document.createElement('div');
+                sourceItem.className = 'source-item';
+                
+                const sourceHeader = document.createElement('div');
+                sourceHeader.className = 'source-header';
+                
+                const sourceName = document.createElement('div');
+                sourceName.className = 'source-name';
+                sourceName.textContent = source.name;
+                sourceName.title = source.name;
+                
+                const sourceRows = document.createElement('div');
+                sourceRows.className = 'source-rows';
+                sourceRows.textContent = `${source.rows} 行`;
+                
+                sourceHeader.appendChild(sourceName);
+                sourceHeader.appendChild(sourceRows);
+                
+                const sourceDetails = document.createElement('div');
+                sourceDetails.className = 'source-details';
+                
+                const columnInfo = document.createElement('div');
+                columnInfo.className = 'column-info';
+                
+                const columnText = document.createElement('span');
+                columnText.textContent = `${source.columns} 列`;
+                
+                const columnStatus = document.createElement('span');
+                columnStatus.className = source.isConsistent ? 'column-ok' : 'column-warning';
+                columnStatus.textContent = source.isConsistent ? '✓ 一致' : '⚠ 不一致';
+                
+                columnInfo.appendChild(columnText);
+                columnInfo.appendChild(columnStatus);
+                
+                const rowText = document.createElement('div');
+                rowText.textContent = `${source.rows} 行数据`;
+                
+                sourceDetails.appendChild(columnInfo);
+                sourceDetails.appendChild(rowText);
+                
+                sourceItem.appendChild(sourceHeader);
+                sourceItem.appendChild(sourceDetails);
+                
+                sourcesList.appendChild(sourceItem);
+            });
+        }
+        
+        // 下载合并结果
+        downloadBtn.addEventListener('click', () => {
+            if (!mergedData || mergedData.data.length === 0) {
+                alert('没有可下载的数据，请先合并表格！');
+                return;
+            }
+            
+            try {
+                // 创建工作簿和工作表
+                const workbook = XLSX.utils.book_new();
+                const worksheetData = mergedData.data;
+                const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+                
+                // 添加到工作簿
+                let sheetName = '合并结果';
+                if (mergedData.keepSourceColumn) {
+                    sheetName += '(含来源)';
+                }
+                if (mergedData.skipRows > 0) {
+                    sheetName += `(跳过${mergedData.skipRows}行)`;
+                }
+                if (mergedData.removeEmptyRows) {
+                    sheetName += '(已删空行)';
+                }
+                
+                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+                
+                // 生成文件并下载
+                const dateStr = new Date().toISOString().slice(0, 10);
+                const fileName = `${sheetName}_${dateStr}.xlsx`;
+                XLSX.writeFile(workbook, fileName);
+            } catch (error) {
+                console.error('下载文件时出错:', error);
+                alert('下载文件时出错: ' + error.message);
+            }
+        });
+        
+        // 清除全部按钮
+        clearBtn.addEventListener('click', () => {
+            selectedFiles = [];
+            fileSheetInfo = {};
+            mergedData = null;
+            columnWarnings = [];
+            
+            // 更新UI
+            updateFileList();
+            emptyStats.style.display = 'block';
+            sourcesList.style.display = 'none';
+            totalStats.style.display = 'none';
+            warningBox.style.display = 'none';
+            downloadBtn.disabled = true;
+            
+            // 重置选项为默认值
+            keepSourceColumnCheckbox.checked = true;
+            removeEmptyRowsCheckbox.checked = true;
+            skipRowsCheckbox.checked = false;
+            skipRowsSelect.disabled = true;
+            skipRowsSelect.value = '1';
+        });
+        
+        // 初始化文件列表
+        updateFileList();
+        
+        // 示例数据（用于演示）
+        async function loadDemoData() {
+            // 创建示例Excel数据
+            const demoData1 = "姓名,年龄,部门,职位\n张三,28,技术部,高级工程师\n李四,32,销售部,销售总监\n王五,25,市场部,市场专员\n\n\n赵六,30,技术部,中级工程师";
+            const demoData2 = "产品名称,价格,库存,供应商,产品分类\n手机,2999,150,供应商A,电子产品\n笔记本电脑,6999,80,供应商B,电子产品\n平板电脑,1999,200,供应商C,电子产品";
+            const demoData3 = "订单号,客户,金额,订单日期\nORD001,客户A,1200,2023-04-01\nORD002,客户B,800,2023-04-02\n\n\nORD003,客户C,2500,2023-04-03";
+            
+            // 创建File对象
+            const blob1 = new Blob([demoData1], { type: 'text/csv' });
+            const file1 = new File([blob1], '员工信息表.csv', { type: 'text/csv' });
+            
+            const blob2 = new Blob([demoData2], { type: 'text/csv' });
+            const file2 = new File([blob2], '产品信息表.csv', { type: 'text/csv' });
+            
+            const blob3 = new Blob([demoData3], { type: 'text/csv' });
+            const file3 = new File([blob3], '订单记录表.csv', { type: 'text/csv' });
+            
+            selectedFiles = [file1, file2, file3];
+            
+            // 获取文件sheet信息
+            for (const file of selectedFiles) {
+                await getFileSheetInfo(file);
+            }
+            
+            updateFileList();
+        }
+        
+        // 页面加载后加载示例数据
+        window.addEventListener('DOMContentLoaded', () => {
+            // 取消注释下一行以加载示例数据
+            // loadDemoData();
+        });
+    </script>
+</body>
+</html>

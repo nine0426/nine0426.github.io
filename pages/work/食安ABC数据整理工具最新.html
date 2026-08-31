@@ -1,0 +1,1363 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>食安ABC数据整理工具</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fff; color: #333; line-height: 1.5; padding: 16px;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+
+    /* 页面头部 */
+    header {
+      text-align: center; margin-bottom: 24px; padding: 24px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px; box-shadow: 0 6px 20px rgba(102,126,234,0.3); color: white;
+    }
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .subtitle { font-size: 15px; opacity: 0.95; }
+
+    /* Tab 切换 */
+    .tab-container {
+      display: flex; gap: 0; margin-bottom: 24px; border-radius: 10px;
+      overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .tab-btn {
+      flex: 1; padding: 16px 24px; border: none; background: #f8f9fa; color: #6c757d;
+      font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .tab-btn:hover { background: #e9ecef; }
+    .tab-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 提示框 */
+    .warning-box {
+      background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px 16px;
+      border-radius: 8px; margin-bottom: 20px; font-size: 14px; color: #856404;
+      box-shadow: 0 2px 8px rgba(255,193,7,0.2);
+    }
+    .info-box {
+      background: #e7f3ff; border-left: 4px solid #2196f3; padding: 12px 16px;
+      border-radius: 8px; margin-bottom: 20px; font-size: 14px; line-height: 1.6;
+      box-shadow: 0 2px 8px rgba(33,150,243,0.1);
+    }
+    .warning-box strong, .info-box strong { font-size: 15px; }
+    .warning-box strong { color: #d39e00; }
+    .info-box strong { color: #1976d2; }
+
+    /* 文件上传卡片（Tab1用） */
+    .upload-card {
+      background: #f8f9fa; border-radius: 10px; padding: 16px;
+      border: 2px solid #e9ecef; transition: all 0.3s ease; min-height: 160px;
+    }
+    .upload-card:hover { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(102,126,234,0.15); }
+    .file-input-group { display: flex; flex-direction: column; gap: 10px; }
+    .file-input-label { font-size: 13px; font-weight: 600; color: #495057; }
+    input[type="file"] {
+      width: 100%; padding: 10px; background: white; border: 2px dashed #ced4da;
+      border-radius: 6px; color: #495057; cursor: pointer; transition: all 0.3s ease; font-size: 13px;
+    }
+    input[type="file"]:hover { border-color: #667eea; background: #f8f9ff; }
+    input[type="file"]::file-selector-button {
+      padding: 8px 16px; background: #667eea; color: white; border: none;
+      border-radius: 6px; cursor: pointer; margin-right: 12px; font-weight: 600;
+    }
+    .file-status {
+      margin-top: 6px; padding: 6px 10px; background: white; border-radius: 4px; font-size: 12px; color: #6c757d;
+    }
+    .file-status.uploaded { color: #28a745; background: #d4edda; }
+
+    /* 智能上传区域（Tab1和Tab2共用样式） */
+    .smart-upload-card {
+      background: #f8f9fa; border-radius: 12px; padding: 24px;
+      border: 2px dashed #667eea; transition: all 0.3s ease; text-align: center; margin-bottom: 20px; cursor: pointer;
+    }
+    .smart-upload-card:hover { border-color: #764ba2; background: #f8f9ff; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(102,126,234,0.15); }
+    .smart-upload-card.dragover { border-color: #28a745; background: #e8f5e9; }
+    .smart-upload-card h3 { color: #667eea; font-size: 20px; margin-bottom: 8px; }
+    .smart-upload-card .upload-hint { color: #868e96; font-size: 13px; }
+    .smart-upload-card input[type="file"] { display: none; }
+
+    /* 已上传文件标签 */
+    .uploaded-files-list { margin-top: 12px; text-align: left; }
+    .uploaded-file-tag {
+      display: inline-flex; align-items: center; gap: 6px; background: #d4edda;
+      color: #155724; padding: 4px 12px; border-radius: 16px; margin: 4px; font-size: 13px;
+    }
+    .uploaded-file-tag .tag-type {
+      background: #667eea; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+    }
+    .uploaded-file-tag .tag-remove { cursor: pointer; color: #dc3545; font-weight: bold; margin-left: 4px; }
+
+    .mapping-panel {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 14px 16px; margin-bottom: 20px; background: #f8f9fa;
+      border: 1px solid #dee2e6; border-radius: 8px;
+    }
+    .mapping-panel h3 { font-size: 15px; color: #495057; margin-right: auto; }
+    .mapping-panel input[type="file"] { width: min(100%, 420px); }
+    .mapping-status { flex-basis: 100%; font-size: 13px; color: #6c757d; }
+    .mapping-status.ready { color: #218838; }
+
+    /* 按钮 */
+    .actions { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+    button {
+      padding: 12px 24px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .btn-process { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .btn-process:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+    .btn-process:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-export { background: #28a745; color: white; }
+    .btn-export:hover:not(:disabled) { background: #218838; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(40,167,69,0.4); }
+    .btn-export:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-clear { background: #6c757d; color: white; }
+    .btn-clear:hover { background: #5a6268; transform: translateY(-2px); }
+
+    /* 日志 */
+    .log-section {
+      background: white; border-radius: 10px; padding: 14px; margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid #e9ecef; max-height: 250px; overflow-y: auto;
+    }
+    .log-title { font-size: 16px; font-weight: 700; color: #495057; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .log-content {
+      font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; line-height: 1.7;
+      color: #495057; background: #f8f9fa; padding: 10px; border-radius: 6px; white-space: pre-wrap; word-wrap: break-word;
+    }
+    .log-item { margin-bottom: 4px; padding: 4px 0; }
+    .log-item.success { color: #28a745; } .log-item.error { color: #dc3545; }
+    .log-item.info { color: #17a2b8; } .log-item.warning { color: #dc8c00; }
+
+    /* 结果区域 */
+    .result-box {
+      background: white; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08); border: 1px solid #e9ecef;
+    }
+    .result-empty { padding: 50px 20px; text-align: center; color: #6c757d; }
+    .result-empty h3 { font-size: 18px; margin: 12px 0 6px; color: #495057; }
+    .result-success { padding: 40px 20px; text-align: center; }
+    .result-success-icon { font-size: 48px; margin-bottom: 14px; }
+    .result-success h3 { font-size: 20px; color: #28a745; margin-bottom: 12px; }
+    .result-success .count { font-size: 16px; color: #495057; margin-bottom: 16px; }
+    .result-success .count span { font-weight: 700; color: #667eea; font-size: 28px; }
+    .result-success .hint { font-size: 14px; color: #6c757d; }
+
+    /* 统计卡片 */
+    .stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;
+      margin-bottom: 30px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;
+      padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+    }
+    .stat-card h4 { font-size: 14px; margin-bottom: 10px; opacity: 0.9; }
+    .stat-card .number { font-size: 32px; font-weight: 700; }
+
+    /* 表格 */
+    .table-wrapper { overflow-x: auto; max-height: 600px; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;
+      padding: 15px; text-align: left; font-weight: 600; position: sticky; top: 0; z-index: 10; font-size: 14px;
+    }
+    td { padding: 12px 15px; border-bottom: 1px solid #e9ecef; font-size: 14px; }
+    tr:hover { background: #f8f9fa; }
+
+    /* 加载动画 */
+    .loading {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .spinner { width: 48px; height: 48px; border: 4px solid #e9ecef; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .loading-text { font-size: 16px; font-weight: 600; color: #667eea; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>食安ABC数据整理工具</h1>
+      <p class="subtitle">ABC数据格式化处理 + 食安成绩提取</p>
+    </header>
+
+    <!-- Tab 切换 -->
+    <div class="tab-container">
+      <button class="tab-btn active" data-tab="abc"><span>📊</span> ABC数据格式化</button>
+      <button class="tab-btn" data-tab="food"><span>🍽️</span> 食安成绩提取</button>
+    </div>
+
+    <!-- ==================== Tab1: ABC数据格式化 ==================== -->
+    <div class="tab-content active" id="abc-tab">
+      <div class="warning-box">
+        <strong>⚠️ 智能识别提示：</strong><br>
+        请同时上传<strong>巡店记录表</strong>和<strong>基础详情表</strong>，工具会根据表头自动识别文件类型。<br>
+        • <strong>巡店记录表</strong>：包含"巡店记录id"列 → 自动识别<br>
+        • <strong>基础详情表</strong>：包含"所属分类"列 → 自动识别<br>
+        请直接上传<strong>原始文件</strong>，不要删除任何列！
+      </div>
+
+      <!-- 智能上传区域 -->
+      <div class="smart-upload-card" id="smartUploadABC">
+        <h3>📂 点击或拖拽上传文件（需同时上传巡店记录表+基础详情表）</h3>
+        <p class="upload-hint">支持 .xlsx / .xls 格式，可同时选择两个文件，自动识别类型</p>
+        <input type="file" id="smartFileABC" accept=".xlsx,.xls" multiple />
+        <div class="uploaded-files-list" id="uploadedFilesABC"></div>
+      </div>
+
+      <div class="info-box">
+        <strong>📌 使用说明：</strong><br>
+        1. 上传巡店记录表和基础详情表后点击"开始处理"<br>
+        2. 稽核形式判定：巡店记录表类型列 "食安稽核"→线下，"视频巡店"→线上<br>
+        3. 巡店记录表与基础详情表通过"门店编号+巡店记录id"匹配<br>
+        4. 处理完成后可导出为Excel文件
+      </div>
+
+      <div class="actions">
+        <button id="btnProcessABC" class="btn-process" disabled><span>⚡</span> 开始处理</button>
+        <button id="btnExportABC" class="btn-export" disabled><span>📥</span> 导出 Excel</button>
+        <button id="btnClearABC" class="btn-clear"><span>🗑️</span> 清空</button>
+      </div>
+
+      <div class="log-section" id="logSectionABC" style="display: none;">
+        <div class="log-title"><span>📋</span> 处理日志</div>
+        <div class="log-content" id="logContentABC"></div>
+      </div>
+
+      <div class="result-box" id="resultABC">
+        <div class="result-empty"><div style="font-size:64px">📊</div><h3>等待处理</h3><p>请上传数据文件，然后点击"开始处理"</p></div>
+      </div>
+    </div>
+
+    <!-- ==================== Tab2: 食安成绩提取 ==================== -->
+    <div class="tab-content" id="food-tab">
+      <div class="warning-box">
+        <strong>⚠️ 智能识别提示：</strong><br>
+        支持同时处理两套文件：<strong>巡店记录表 + 基础详情表</strong>，以及海康云眸的<strong>门店考评记录明细表 + 门店问题明细报表</strong>；也可以只上传其中一套。
+      </div>
+
+      <div class="mapping-panel">
+        <h3>品牌门店匹配表</h3>
+        <input type="file" id="brandMapFileFood" accept=".xlsx,.xls" />
+        <button id="clearBrandMapFood" class="btn-clear" type="button">清除匹配表</button>
+        <div id="brandMapStatusFood" class="mapping-status">尚未导入匹配表</div>
+      </div>
+
+      <div class="smart-upload-card" id="smartUploadFood">
+        <h3>📂 点击或拖拽上传食安数据文件</h3>
+        <p class="upload-hint">可同时上传巡店文件组合和海康云眸总分表/问题明细表，工具会分别识别、匹配后合并输出</p>
+        <input type="file" id="smartFileFood" accept=".xlsx,.xls" multiple />
+        <div class="uploaded-files-list" id="uploadedFilesFood"></div>
+      </div>
+
+      <div class="info-box">
+        <strong>📌 使用说明：</strong><br>
+        1. 原巡店数据通过"巡店记录id"匹配；云眸数据通过"门店编号 + 巡查时间 + 巡查模板"匹配<br>
+        2. 品牌门店匹配表导入一次后会保存在当前浏览器中，再次打开工具仍可使用<br>
+        3. 按固定位置提取线下10项、线上10项；非当前稽核形式的项目填“/”<br>
+        4. 点击"开始处理"，完成后可导出Excel
+      </div>
+
+      <div class="actions">
+        <button id="processBtnFood" class="btn-process" disabled><span>⚡</span> 开始处理</button>
+        <button id="downloadBtnFood" class="btn-export" disabled><span>📥</span> 导出 Excel</button>
+        <button id="clearBtnFood" class="btn-clear"><span>🗑️</span> 清空</button>
+      </div>
+
+      <div class="log-section" id="logSectionFood" style="display: none;">
+        <div class="log-title"><span>📋</span> 处理日志</div>
+        <div class="log-content" id="logContentFood"></div>
+      </div>
+
+      <div class="result-box" id="resultFood">
+        <div class="result-empty"><div style="font-size:64px">📊</div><h3>等待处理</h3><p>请上传数据文件，然后点击"开始处理"</p></div>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">正在处理数据，请稍候...</div>
+    </div>
+  </div>
+
+  <script>
+    /* ========================================================================
+     *                    共享工具函数
+     * ======================================================================== */
+
+    /** 日志工厂 */
+    function createLogger(contentEl, sectionEl) {
+      return {
+        clear() { contentEl.innerHTML = ''; sectionEl.style.display = 'none'; },
+        add(message, type = 'info') {
+          sectionEl.style.display = 'block';
+          const el = document.createElement('div');
+          el.className = `log-item ${type}`;
+          el.textContent = `[${new Date().toLocaleTimeString('zh-CN')}] ${message}`;
+          contentEl.appendChild(el);
+          contentEl.scrollTop = contentEl.scrollHeight;
+        }
+      };
+    }
+
+    function getExcelCellText(cell) {
+      if (!cell) return '';
+      if (cell.w !== undefined) return String(cell.w).trim();
+      return String(XLSX.utils.format_cell(cell) || '').trim();
+    }
+
+    /** 云眸导出的 !ref 可能只包含表头，按实际单元格地址重建有效范围。 */
+    function repairExcelSheetRange(sheet) {
+      const refs = Object.keys(sheet || {}).filter(key => key[0] !== '!' && /^[A-Z]+\d+$/.test(key));
+      if (!refs.length) return sheet;
+      const range = {
+        s: { r: Number.MAX_SAFE_INTEGER, c: Number.MAX_SAFE_INTEGER },
+        e: { r: 0, c: 0 }
+      };
+      refs.forEach(ref => {
+        const cell = XLSX.utils.decode_cell(ref);
+        range.s.r = Math.min(range.s.r, cell.r);
+        range.s.c = Math.min(range.s.c, cell.c);
+        range.e.r = Math.max(range.e.r, cell.r);
+        range.e.c = Math.max(range.e.c, cell.c);
+      });
+      sheet['!ref'] = XLSX.utils.encode_range(range);
+      return sheet;
+    }
+
+    /** 只提取需要的列，避免为图片、附件等无关大字段创建二维数组 */
+    function extractExcelColumns(sheet, requiredColumns) {
+      if (!sheet || !sheet['!ref']) throw new Error('Excel工作表为空');
+      const range = XLSX.utils.decode_range(sheet['!ref']);
+      const columnIndexes = {};
+      for (let c = range.s.c; c <= range.e.c; c++) {
+        const header = getExcelCellText(sheet[XLSX.utils.encode_cell({ r: range.s.r, c })]);
+        if (requiredColumns.includes(header)) columnIndexes[header] = c;
+      }
+      const missing = requiredColumns.filter(name => columnIndexes[name] === undefined);
+      if (missing.length) throw new Error(`缺少必要列：${missing.join('、')}`);
+
+      const rows = [requiredColumns.slice()];
+      for (let r = range.s.r + 1; r <= range.e.r; r++) {
+        const row = requiredColumns.map(name => getExcelCellText(
+          sheet[XLSX.utils.encode_cell({ r, c: columnIndexes[name] })]
+        ));
+        if (row.some(Boolean)) rows.push(row);
+      }
+      return rows;
+    }
+
+    /** 读取Excel文件；食安板块可指定列以减少内存和转换时间 */
+    function readExcelFile(file, requiredColumns = null) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const workbook = XLSX.read(new Uint8Array(e.target.result), {
+              type: 'array', cellHTML: false, cellNF: false, cellStyles: false
+            });
+            const sheet = repairExcelSheetRange(workbook.Sheets[workbook.SheetNames[0]]);
+            resolve(requiredColumns
+              ? extractExcelColumns(sheet, requiredColumns)
+              : XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false }));
+          } catch (err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    /** 日期格式化 */
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      dateStr = String(dateStr);
+      if (dateStr.includes('-') && dateStr.includes(':')) return dateStr.split(' ')[0];
+      if (dateStr.includes('.')) return dateStr.replace(/\./g, '-');
+      return dateStr;
+    }
+
+    /** 通用智能上传初始化函数 - 绑定拖拽、点击、文件变更事件 */
+    function initSmartUpload(cardId, inputId, listId, detectFn, onFilesChanged, options = {}) {
+      const card = document.getElementById(cardId);
+      const input = document.getElementById(inputId);
+      const list = document.getElementById(listId);
+      let files = []; // [{file, type, typeLabel, data?}]
+
+      card.addEventListener('click', e => { if (!e.target.closest('.tag-remove')) input.click(); });
+      card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('dragover'); });
+      card.addEventListener('dragleave', () => card.classList.remove('dragover'));
+      card.addEventListener('drop', e => {
+        e.preventDefault(); card.classList.remove('dragover');
+        if (e.dataTransfer.files.length) processFiles(Array.from(e.dataTransfer.files));
+      });
+      input.addEventListener('change', () => {
+        if (input.files.length) { processFiles(Array.from(input.files)); input.value = ''; }
+      });
+
+      async function processFiles(newFiles) {
+        for (const file of newFiles) {
+          if (files.some(f => f.file.name === file.name)) continue;
+          try {
+            let data = null;
+            let result = detectFn([], file.name);
+            if (!options.lazy || !result) {
+              data = await readExcelFile(file);
+              const headers = data.length > 0 ? data[0].map(h => String(h).trim()) : [];
+              result = detectFn(headers, file.name);
+            }
+            if (!result) continue;
+            files.push({ file, type: result.type, typeLabel: result.label, ...(!options.lazy && data ? { data } : {}) });
+          } catch (err) { /* 读取失败静默跳过，由调用方通过UI提示 */ }
+        }
+        renderFileTags();
+        onFilesChanged(files);
+      }
+
+      function renderFileTags() {
+        if (!files.length) { list.innerHTML = ''; return; }
+        list.innerHTML = files.map((f, i) => `
+          <span class="uploaded-file-tag">
+            <span class="tag-type">${f.typeLabel}</span> ${f.file.name}
+            <span class="tag-remove" data-index="${i}">×</span>
+          </span>`).join('');
+        list.querySelectorAll('.tag-remove').forEach(el => {
+          el.addEventListener('click', e => {
+            e.stopPropagation();
+            files.splice(parseInt(el.dataset.index), 1);
+            renderFileTags();
+            onFilesChanged(files);
+          });
+        });
+      }
+
+      /** 获取当前文件列表的副本 */
+      function getFiles() { return [...files]; }
+
+      /** 清空所有文件 */
+      function clear() { files = []; renderFileTags(); onFilesChanged(files); }
+
+      return { getFiles, clear };
+    }
+
+    /* ========================================================================
+     *                    Tab 切换
+     * ======================================================================== */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab + '-tab').classList.add('active');
+      });
+    });
+
+    /* ========================================================================
+     *                    Tab1: ABC数据格式化
+     *                    （智能上传 + 仅稽核组内报告）
+     * ======================================================================== */
+
+    // 列索引常量 - 巡店记录表
+    const COL_VISIT = {
+      RECORD_ID: 0, TYPE: 1, STORE_NAME: 3, STORE_ID: 4,
+      TASK_STATUS: 8, ENTRY_TIME: 7, SCORE_ACTUAL: 16, NOT_APPLICABLE: 13,
+      AUDITOR: 23, AUDIT_TIME_SEC: 27, AUDIT_DATE: 29
+    };
+    // 列索引常量 - 基础详情表
+    const COL_DETAIL = {
+      RECORD_ID: 0, STORE_NAME: 2, STORE_ID: 3, VALIDITY_STR: 6,
+      CATEGORY: 9, GRADE: 23, REMARK: 25
+    };
+
+    const loggerABC = createLogger(document.getElementById('logContentABC'), document.getElementById('logSectionABC'));
+    let mergedData = [];
+
+    function getCell(row, idx) {
+      if (!row || idx >= row.length) return '';
+      const val = row[idx];
+      return (val !== undefined && val !== null) ? String(val).trim() : '';
+    }
+
+    function normalizeGrade(grade) {
+      return grade === '门店当时未展现' ? '不适用' : grade;
+    }
+
+    /** Tab1 文件类型检测：巡店记录表 vs 基础详情表 */
+    function detectFileTypeABC(headers, fileName) {
+      const headerSet = new Set(headers);
+      if (headerSet.has('所属分类')) return { type: 'detail', label: '基础详情表' };
+      if (headerSet.has('巡店记录id') || headerSet.has('类型')) return { type: 'visit', label: '巡店记录表' };
+      return null; // 无法识别
+    }
+
+    // 初始化智能上传
+    const smartUploadABC = initSmartUpload(
+      'smartUploadABC', 'smartFileABC', 'uploadedFilesABC',
+      detectFileTypeABC,
+      (files) => {
+        const hasVisit = files.some(f => f.type === 'visit');
+        const hasDetail = files.some(f => f.type === 'detail');
+        document.getElementById('btnProcessABC').disabled = !(hasVisit && hasDetail);
+      }
+    );
+
+    /** 处理稽核组内报告 */
+    function processOnlineData(visitData, detailData) {
+      loggerABC.add('开始处理稽核组内报告...', 'info');
+
+      // 构建详情映射（key: 巡店记录id_门店名称）
+      const detailMap = new Map();
+      for (let i = 1; i < detailData.length; i++) {
+        const row = detailData[i];
+        const recordId = getCell(row, COL_DETAIL.RECORD_ID);
+        const storeName = getCell(row, COL_DETAIL.STORE_NAME);
+        if (!recordId || !storeName) continue;
+        const key = `${recordId}_${storeName}`;
+
+        if (!detailMap.has(key)) {
+          detailMap.set(key, { 门店基础面:'', 团队氛围:'', 顾客进店到离店:'', 闲时要性:'', 体感报告:'' });
+        }
+        const cat = getCell(row, COL_DETAIL.CATEGORY).replace(/\s+/g, '');
+        const grade = normalizeGrade(getCell(row, COL_DETAIL.GRADE));
+        const detail = detailMap.get(key);
+
+        if (cat.includes('门店基础面') || cat.includes('基础面')) detail.门店基础面 = grade;
+        else if (cat.includes('团队氛围') || cat.includes('氛围')) detail.团队氛围 = grade;
+        else if (cat.includes('顾客进店到离店') || cat.includes('进店到离店')) detail.顾客进店到离店 = grade;
+        else if (cat.includes('闲时要性') || cat.includes('闲时')) detail.闲时要性 = grade;
+        else if (cat.includes('总体评估报告') || cat.includes('体感')) {
+          const remark = getCell(row, COL_DETAIL.REMARK);
+          const gradeRaw = getCell(row, COL_DETAIL.GRADE);
+          if (gradeRaw && (String(gradeRaw).includes('体感') || String(gradeRaw).includes('报告'))) detail.体感报告 = gradeRaw;
+          if (remark) detail.体感报告 = remark;
+        }
+      }
+      loggerABC.add(`基础详情表加载完成，共 ${detailMap.size} 条巡店记录`, 'success');
+
+      let onlineCount = 0, offlineCount = 0, unmatchedCount = 0, filteredCount = 0, totalCount = 0;
+      const results = [];
+
+      for (let i = 1; i < visitData.length; i++) {
+        totalCount++;
+        const row = visitData[i];
+        const recordId = getCell(row, COL_VISIT.RECORD_ID);
+        const storeName = getCell(row, COL_VISIT.STORE_NAME);
+        const storeId = getCell(row, COL_VISIT.STORE_ID);
+        if (!recordId || !storeName) continue;
+
+        // 任务状态过滤
+        const taskStatus = getCell(row, COL_VISIT.TASK_STATUS);
+        if (taskStatus !== '待审批' && taskStatus !== '已完成') { filteredCount++; continue; }
+
+        // 稽核形式判定
+        const type = getCell(row, COL_VISIT.TYPE);
+        let auditType = '未知';
+        if (type === '视频巡店') { auditType = '线上'; onlineCount++; }
+        else if (type === '食安稽核') { auditType = '线下'; offlineCount++; }
+
+        const scoreActual = parseFloat(getCell(row, COL_VISIT.SCORE_ACTUAL)) || 0;
+        const notApplicable = parseFloat(getCell(row, COL_VISIT.NOT_APPLICABLE)) || 0;
+        const finalScore = notApplicable === 0 ? scoreActual : (scoreActual / 0.75);
+        const auditor = getCell(row, COL_VISIT.AUDITOR);
+        const auditDate = formatDate(getCell(row, COL_VISIT.AUDIT_DATE));
+        const auditTimeSeconds = parseFloat(getCell(row, COL_VISIT.AUDIT_TIME_SEC)) || 0;
+        const auditTimeStr = auditTimeSeconds > 0 ? (auditTimeSeconds / 60).toFixed(2) : '不可用';
+
+        const key = `${recordId}_${storeName}`;
+        const detail = detailMap.get(key) || { 门店基础面:'', 团队氛围:'', 顾客进店到离店:'', 闲时要性:'', 体感报告:'' };
+        if (!detailMap.has(key)) unmatchedCount++;
+        const reportText = detail.体感报告;
+
+        results.push({
+          门店编号: storeId || '未匹配', 稽核形式: auditType, 门店名称: storeName,
+          评估人: auditor, 评估分数: finalScore,
+          门店基础面: detail.门店基础面, 团队氛围: detail.团队氛围,
+          顾客进店到离店: detail.顾客进店到离店, 闲时要性: detail.闲时要性,
+          体感报告: reportText, 报告字数: reportText.length,
+          稽核日期: auditDate, 稽核用时: auditTimeStr
+        });
+      }
+
+      loggerABC.add(`巡店记录表共 ${totalCount} 条，过滤 ${filteredCount} 条（非待审批/已完成）`, 'info');
+      loggerABC.add(`处理完成：${results.length} 条（线上${onlineCount}，线下${offlineCount}）`, 'success');
+      if (unmatchedCount) loggerABC.add(`未匹配详情：${unmatchedCount} 条`, 'warning');
+      return results;
+    }
+
+    // 处理按钮
+    document.getElementById('btnProcessABC').addEventListener('click', async () => {
+      const files = smartUploadABC.getFiles();
+      const visitFile = files.find(f => f.type === 'visit');
+      const detailFile = files.find(f => f.type === 'detail');
+
+      if (!visitFile || !detailFile) {
+        alert('请同时上传巡店记录表和基础详情表');
+        return;
+      }
+
+      const btn = document.getElementById('btnProcessABC');
+      btn.disabled = true;
+      document.getElementById('loading').style.display = 'flex';
+      loggerABC.clear();
+      loggerABC.add('开始处理数据...', 'info');
+
+      try {
+        const results = processOnlineData(visitFile.data, detailFile.data);
+        mergedData = results;
+        loggerABC.add(`合并完成，共 ${results.length} 条记录`, 'success');
+        document.getElementById('btnExportABC').disabled = results.length === 0;
+        document.getElementById('resultABC').innerHTML = results.length ? `
+          <div class="result-success">
+            <div class="result-success-icon">✅</div><h3>处理完成！</h3>
+            <div class="count">共处理 <span>${results.length}</span> 条记录</div>
+            <div class="hint">点击下方"导出Excel"按钮下载完整数据</div>
+          </div>` : `<div class="result-empty"><div style="font-size:64px">📊</div><h3>无数据</h3></div>`;
+      } catch (err) {
+        loggerABC.add(`处理失败：${err.message}`, 'error');
+        alert('处理失败：' + err.message);
+      } finally {
+        btn.disabled = false;
+        document.getElementById('loading').style.display = 'none';
+      }
+    });
+
+    // 导出按钮
+    document.getElementById('btnExportABC').addEventListener('click', () => {
+      if (!mergedData.length) return;
+      const exportData = mergedData.map((row, index) => ({ 序号: index + 1, ...row }));
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const scoreColumn = Object.keys(exportData[0]).indexOf('评估分数');
+      for (let row = 1; row <= exportData.length; row++) {
+        const cell = ws[XLSX.utils.encode_cell({ r: row, c: scoreColumn })];
+        if (cell && cell.t === 'n') cell.z = '0.00';
+      }
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'ABC数据');
+      XLSX.writeFile(wb, `ABC数据格式化结果_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.xlsx`);
+      loggerABC.add('Excel导出成功', 'success');
+    });
+
+    // 清空按钮
+    document.getElementById('btnClearABC').addEventListener('click', () => {
+      smartUploadABC.clear();
+      mergedData = [];
+      document.getElementById('btnExportABC').disabled = true;
+      loggerABC.clear();
+      document.getElementById('resultABC').innerHTML = `<div class="result-empty"><div style="font-size:64px">📊</div><h3>等待处理</h3><p>请上传数据文件，然后点击"开始处理"</p></div>`;
+    });
+
+    /* ========================================================================
+     *                    Tab2: 食安成绩提取
+     *                    （巡店记录表 + 基础详情表）
+     * ======================================================================== */
+
+    
+    // Tab2 状态
+    let resultData = [];
+    let foodStats = { online: 0, offline: 0, unmatched: 0 };
+
+    const loggerFood = createLogger(document.getElementById('logContentFood'), document.getElementById('logSectionFood'));
+    const FOOD_POINT_RULES = [
+      { column: '线下-食安红灯-营业执照、食品经营许可证、健康证三证齐全信息符合经营范围，公示在可见区域内且都在有效期内', remarkColumn: '线下-食安红灯1整改点', auditType: 'offline', color: 'red', keywords: ['营业执照'] },
+      { column: '线下-食安红灯-门店营业范围内发现活体老鼠或尸体', remarkColumn: '线下-食安红灯2整改点', auditType: 'offline', color: 'red', keywords: ['活体老鼠'] },
+      { column: '线下-食安红灯-门店营业期间出现商品/未开封物料/开封物料，原包装效期或开标出现过期', remarkColumn: '线下-食安红灯3整改点', auditType: 'offline', color: 'red', keywords: ['原包装效期', '开标出现过期'] },
+      { column: '线下-食安红灯-门店营业期间开封的物料、水果、乳制品、接触食品的设备、器具、容器出现发酸、发霉、腐烂、长蛆', remarkColumn: '线下-食安红灯4整改点', auditType: 'offline', color: 'red', keywords: ['发酸'] },
+      { column: '线下-食安黄灯-依标准仪容仪表规范进入操作间，外露皮肤无化脓、渗出性伤口；引发金黄色葡萄球菌等致病菌污染流入食品，引发食源性疾病中度呕吐', remarkColumn: '线下-食安黄灯1整改点', auditType: 'offline', color: 'yellow', keywords: ['仪容仪表'] },
+      { column: '线下-食安黄灯-化学品、清洁品、私人物品与食品类混放；自采化学品、清洁用品。(使用非食品级用品造成食物中毒)', remarkColumn: '线下-食安黄灯2整改点', auditType: 'offline', color: 'yellow', keywords: ['化学品'] },
+      { column: '线下-食安黄灯-虫害维护和防护设施(灭蝇灯、风幕机)未按标准开启及维护', remarkColumn: '线下-食安黄灯3整改点', auditType: 'offline', color: 'yellow', keywords: ['虫害维护'] },
+      { column: '线下-食安黄灯-门店食安主体责任未落实（日管控周排查月调度)，食品添加剂未专项管理', remarkColumn: '线下-食安黄灯4整改点', auditType: 'offline', color: 'yellow', keywords: ['主体责任'] },
+      { column: '线下-食安黄灯-门店加工区、外场、仓库环境、设备设施、容器、器具的食品接触面卫生不达标', remarkColumn: '线下-食安黄灯5整改点', auditType: 'offline', color: 'yellow', keywords: ['食品接触面卫生不达标'] },
+      { column: '线下-食安黄灯-设备设施未按标准进行检验达标，作品成品不符合标准', remarkColumn: '线下-食安黄灯6整改点', auditType: 'offline', color: 'yellow', keywords: ['检验达标'] },
+      { column: '线上-食安黄灯-设备设施未按标准进行检验达标，作品成品不符合标准', remarkColumn: '线上-食安黄灯1整改点', auditType: 'online', color: 'yellow', keywords: ['检验达标'] },
+      { column: '线上-食安黄灯-设备设施、容器器具，清洁、消毒管理、水果管理', remarkColumn: '线上-食安黄灯2整改点', auditType: 'online', color: 'yellow', keywords: ['清洁消毒管理水果管理'] },
+      { column: '线上-食安黄灯-门店开早或打烊消毒管理', remarkColumn: '线上-食安黄灯3整改点', auditType: 'online', color: 'yellow', keywords: ['开早或打烊消毒'] },
+      { column: '线上-食安黄灯-依标准仪容仪表规范进入操作间，外露皮肤无化脓、渗出性伤口；引发金黄色葡萄球菌等致病菌污染流入食品，引发食源性疾病中度呕吐', remarkColumn: '线上-食安黄灯4整改点', auditType: 'online', color: 'yellow', keywords: ['仪容仪表'] },
+      { column: '线上-食安黄灯-化学品、清洁品、私人物品与食品类混放；自采化学品、清洁用品。(使用非食品级用品造成食物中毒)', remarkColumn: '线上-食安黄灯5整改点', auditType: 'online', color: 'yellow', keywords: ['化学品'] },
+      { column: '线上-食安黄灯-虫害维护和防护设施(灭蝇灯、风幕机)未按标准开启及维护', remarkColumn: '线上-食安黄灯6整改点', auditType: 'online', color: 'yellow', keywords: ['虫害维护'] },
+      { column: '线上-食安红灯-健康证不在有效期内', remarkColumn: '线上-食安红灯1整改点', auditType: 'online', color: 'red', keywords: ['健康证不在有效期'] },
+      { column: '线上-食安红灯-门店营业范围内发现活体老鼠或尸体', remarkColumn: '线上-食安红灯2整改点', auditType: 'online', color: 'red', keywords: ['活体老鼠'] },
+      { column: '线上-食安红灯-门店营业期间商品/未开封物料/开封物料，出现过期，篡改效期', remarkColumn: '线上-食安红灯3整改点', auditType: 'online', color: 'red', keywords: ['篡改效期'] },
+      { column: '线上-食安红灯-设备超过1个月没有清洁', remarkColumn: '线上-食安红灯4整改点', auditType: 'online', color: 'red', keywords: ['超过1个月'] }
+    ];
+    FOOD_POINT_RULES.forEach(rule => {
+      rule.remarkColumn = `${rule.column}-整改点`;
+    });
+    const FOOD_POINT_COLUMNS = FOOD_POINT_RULES.map(rule => rule.column);
+    const FOOD_REMARK_COLUMNS = FOOD_POINT_RULES.map(rule => rule.remarkColumn);
+    const FOOD_OUTPUT_COLUMNS = [
+      '序号', '门店编号', '门店名称', '稽核形式', '成绩', '各项合格率', '评估人', '稽核用时/分', '稽核日期',
+      ...FOOD_POINT_COLUMNS, ...FOOD_REMARK_COLUMNS, '建议项'
+    ];
+    const FOOD_VISIT_COLUMNS = ['巡店记录id', '类型', '门店编号', '门店名称', '任务状态', '任务内容', '巡店结果', '巡店人', '巡店时长（实际）', '签到日期'];
+    const FOOD_DETAIL_COLUMNS = ['巡店记录id', '检查项名称', '任务内容', '所属分类', '统计维度', '检查结果', '巡店结果', '备注'];
+    const HIK_SUMMARY_COLUMNS = ['门店名称', '门店编号', '巡查时间', '巡查方式', '巡查模板', '本次巡查分数', '巡查人', '巡查时长'];
+    const HIK_ISSUE_COLUMNS = ['门店名称', '门店编号', '巡查模板', '巡查大类', '巡查项', '问题项', '巡查评语', '巡查时间', '统计维度', '巡查结果'];
+    const BRAND_MAP_STORAGE_KEY = 'foodSafetyBrandStoreMap.v1';
+    const BRAND_TEMPLATES = new Set([
+      '茶悦食安QC线上稽核解析表-202607版（墨柠）',
+      '茶悦食安QC线上稽核解析表-202607版（鸳央）',
+      '茶悦食安QC线上稽核解析表-202607版（昼夜）'
+    ]);
+    let brandStoreMap = new Map();
+    let brandMapMeta = null;
+
+    function makeBrandMapKey(storeNo, template) {
+      return `${String(storeNo || '').trim()}\u0001${String(template || '').trim()}`;
+    }
+
+    function renderBrandMapStatus(message = '') {
+      const status = document.getElementById('brandMapStatusFood');
+      if (message) {
+        status.textContent = message;
+        status.classList.toggle('ready', brandStoreMap.size > 0);
+        return;
+      }
+      if (!brandStoreMap.size) {
+        status.textContent = '尚未导入匹配表';
+        status.classList.remove('ready');
+        return;
+      }
+      const updatedAt = brandMapMeta && brandMapMeta.updatedAt
+        ? new Date(brandMapMeta.updatedAt).toLocaleString('zh-CN')
+        : '未知时间';
+      const fileName = brandMapMeta && brandMapMeta.fileName ? `，来源：${brandMapMeta.fileName}` : '';
+      status.textContent = `已保存 ${brandStoreMap.size} 条门店映射，更新时间：${updatedAt}${fileName}`;
+      status.classList.add('ready');
+    }
+
+    function loadBrandStoreMap() {
+      try {
+        const payload = JSON.parse(localStorage.getItem(BRAND_MAP_STORAGE_KEY) || 'null');
+        if (!payload || !Array.isArray(payload.items)) return renderBrandMapStatus();
+        brandStoreMap = new Map(payload.items.map(item => [
+          makeBrandMapKey(item.sourceNo, item.template),
+          { storeNo: item.storeNo, storeName: item.storeName }
+        ]));
+        brandMapMeta = { updatedAt: payload.updatedAt, fileName: payload.fileName };
+      } catch (err) {
+        brandStoreMap = new Map();
+        brandMapMeta = null;
+      }
+      renderBrandMapStatus();
+    }
+
+    async function importBrandStoreMap(file) {
+      const data = await readExcelFile(file);
+      if (data.length < 2) throw new Error('匹配表没有数据行');
+      const headers = data[0].map(value => String(value || '').trim());
+      const columns = {
+        sourceName: headers.findIndex(name => name === '门店名称' || name.startsWith('门店名称（')),
+        sourceNo: headers.indexOf('门店编号'),
+        template: headers.indexOf('巡查模板'),
+        storeNo: headers.indexOf('匹配后门店编号'),
+        storeName: headers.indexOf('匹配后门店名称')
+      };
+      const missing = Object.entries(columns).filter(([, index]) => index < 0).map(([name]) => name);
+      if (missing.length) throw new Error('匹配表缺少必要列，请使用8.4匹配表原始格式');
+
+      const map = new Map();
+      let conflicts = 0;
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        const sourceNo = getCell(row, columns.sourceNo);
+        const template = getCell(row, columns.template);
+        const storeNo = getCell(row, columns.storeNo);
+        const storeName = getCell(row, columns.storeName);
+        if (!sourceNo || !template || !storeNo || !storeName) continue;
+        const key = makeBrandMapKey(sourceNo, template);
+        const existing = map.get(key);
+        if (existing && (existing.storeNo !== storeNo || existing.storeName !== storeName)) conflicts++;
+        map.set(key, { sourceNo, template, storeNo, storeName });
+      }
+      if (!map.size) throw new Error('匹配表中没有有效映射');
+
+      const payload = {
+        updatedAt: new Date().toISOString(),
+        fileName: file.name,
+        items: Array.from(map.values())
+      };
+      localStorage.setItem(BRAND_MAP_STORAGE_KEY, JSON.stringify(payload));
+      brandStoreMap = new Map(payload.items.map(item => [
+        makeBrandMapKey(item.sourceNo, item.template),
+        { storeNo: item.storeNo, storeName: item.storeName }
+      ]));
+      brandMapMeta = { updatedAt: payload.updatedAt, fileName: payload.fileName };
+      renderBrandMapStatus();
+      return conflicts;
+    }
+
+    document.getElementById('brandMapFileFood').addEventListener('change', async event => {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (!file) return;
+      try {
+        const conflicts = await importBrandStoreMap(file);
+        const suffix = conflicts ? `，其中 ${conflicts} 条冲突已按最后一行覆盖` : '';
+        loggerFood.add(`品牌门店匹配表导入成功：${brandStoreMap.size} 条${suffix}`, 'success');
+      } catch (err) {
+        renderBrandMapStatus(`导入失败：${err.message}`);
+        loggerFood.add(`品牌门店匹配表导入失败：${err.message}`, 'error');
+        alert('品牌门店匹配表导入失败：' + err.message);
+      }
+    });
+
+    document.getElementById('clearBrandMapFood').addEventListener('click', () => {
+      if (!brandStoreMap.size || !confirm('确定清除已保存的品牌门店匹配表吗？')) return;
+      localStorage.removeItem(BRAND_MAP_STORAGE_KEY);
+      brandStoreMap = new Map();
+      brandMapMeta = null;
+      renderBrandMapStatus();
+      loggerFood.add('已清除品牌门店匹配表', 'info');
+    });
+
+    loadBrandStoreMap();
+
+    /** Tab2 文件类型检测：原巡店文件或海康云眸文件。 */
+    function detectFileTypeFood(headers, fileName = '') {
+      if (fileName.includes('门店考评记录明细表')) return { type: 'hikSummary', label: '云眸门店总分表' };
+      if (fileName.includes('门店问题明细报表')) return { type: 'hikIssue', label: '云眸问题明细表' };
+      if (fileName.includes('基础详情表')) return { type: 'detail', label: '基础详情表' };
+      if (fileName.includes('巡店记录表')) return { type: 'visit', label: '巡店记录表' };
+      const headerSet = new Set(headers);
+      if (headerSet.has('巡查模板') && headerSet.has('本次巡查分数') && headerSet.has('巡查时长')) {
+        return { type: 'hikSummary', label: '云眸门店总分表' };
+      }
+      if (headerSet.has('巡查大类') && headerSet.has('问题项') && headerSet.has('巡查评语')) {
+        return { type: 'hikIssue', label: '云眸问题明细表' };
+      }
+      if (headerSet.has('检查项名称') && headerSet.has('所属分类') && headerSet.has('备注')) {
+        return { type: 'detail', label: '基础详情表' };
+      }
+      if (headerSet.has('巡店记录id') && headerSet.has('任务内容') && headerSet.has('巡店结果')) {
+        return { type: 'visit', label: '巡店记录表' };
+      }
+      return null;
+    }
+
+    const smartUploadFood = initSmartUpload(
+      'smartUploadFood', 'smartFileFood', 'uploadedFilesFood',
+      detectFileTypeFood,
+      (files) => {
+        const visitCount = files.filter(f => f.type === 'visit').length;
+        const detailCount = files.filter(f => f.type === 'detail').length;
+        const hikSummaryCount = files.filter(f => f.type === 'hikSummary').length;
+        const hikIssueCount = files.filter(f => f.type === 'hikIssue').length;
+        const hasPatrolFiles = visitCount > 0 || detailCount > 0;
+        const hasHikFiles = hikSummaryCount > 0 || hikIssueCount > 0;
+        const patrolReady = visitCount === 1 && detailCount > 0;
+        const hikReady = hikSummaryCount === 1 && hikIssueCount === 1;
+        document.getElementById('processBtnFood').disabled = !((patrolReady || hikReady)
+          && (!hasPatrolFiles || patrolReady)
+          && (!hasHikFiles || hikReady));
+      },
+      { lazy: true }
+    );
+
+    function getFoodAuditType(recordType, taskContent) {
+      const type = String(recordType || '').trim();
+      const task = String(taskContent || '').replace(/\s+/g, '');
+      if (!task.includes('食安') || task.includes('大店长自查')) return '';
+      if (task.includes('线上稽核表')) return 'online';
+      if (task.includes('线下稽核表')) return 'offline';
+      if (type === '食安稽核') return 'offline';
+      if (type === '视频巡店') return 'online';
+      return '';
+    }
+
+    function getFoodDetailAuditType(taskContent, category) {
+      const normalizedCategory = normalizeFoodText(category);
+      const task = normalizeFoodText(taskContent);
+      if (normalizedCategory.includes('线上食安') || task.includes('线上')) return 'online';
+      if (normalizedCategory.includes('线下食安') || task.includes('线下')) return 'offline';
+      return '';
+    }
+
+    function normalizeFoodText(value) {
+      return String(value || '').replace(/[\s，。；、：:（）()\/\\\-_.]/g, '');
+    }
+
+    function getFoodPointIndex(auditType, color, checkName) {
+      const normalized = normalizeFoodText(checkName);
+      return FOOD_POINT_RULES.findIndex(rule => rule.auditType === auditType
+        && rule.color === color
+        && rule.keywords.some(keyword => normalized.includes(normalizeFoodText(keyword))));
+    }
+
+    function createFoodPointValues(auditType, applicableValue = '') {
+      return FOOD_POINT_RULES.map(rule => rule.auditType === auditType ? applicableValue : '/');
+    }
+
+    function getFoodPointValues(record, color) {
+      return FOOD_POINT_RULES.reduce((values, rule, index) => {
+        if (rule.auditType === record.auditType && rule.color === color) values.push(record.points[index]);
+        return values;
+      }, []);
+    }
+
+    function appendUnique(list, value) {
+      const text = String(value || '').trim();
+      if (text && !list.includes(text)) list.push(text);
+    }
+
+    function normalizeFoodPointResult(...values) {
+      const results = values.map(value => String(value || '').trim()).filter(Boolean);
+      if (results.some(value => value === '不合格')) return '不合格';
+      if (results.some(value => value === '整改项' || value === '需整改')) return '需整改';
+      if (results.some(value => value === '合格')) return '合格';
+      return results[0] || '';
+    }
+
+    function mergeFoodPointResult(current, incoming) {
+      if (!incoming) return current;
+      if (current === '不合格' || incoming === '不合格') return '不合格';
+      if (current && current !== '/') return current;
+      return incoming;
+    }
+
+    function getAuditDurationMinutes(value) {
+      const text = String(value || '').trim();
+      if (!text) return '';
+      if (/^\d+(?:\.\d+)?$/.test(text)) return Number(text);
+      const hours = Number((text.match(/(\d+(?:\.\d+)?)\s*(?:小时|时)/) || [])[1] || 0);
+      const minutes = Number((text.match(/(\d+(?:\.\d+)?)\s*(?:分钟|分)/) || [])[1] || 0);
+      const seconds = Number((text.match(/(\d+(?:\.\d+)?)\s*秒/) || [])[1] || 0);
+      return hours * 60 + minutes + seconds / 60;
+    }
+
+    function formatFoodAuditDate(value) {
+      const text = String(value || '').trim();
+      const match = text.match(/(\d{4})\s*(?:年|[.\/-])\s*(\d{1,2})\s*(?:月|[.\/-])\s*(\d{1,2})/);
+      return match ? `${match[1]}/${Number(match[2])}/${Number(match[3])}` : text;
+    }
+
+    function getFoodColumnMap(rawData, requiredColumns) {
+      if (!rawData || rawData.length < 1) throw new Error('Excel文件内容为空');
+      const headers = rawData[0].map(h => String(h || '').trim());
+      const columns = {};
+      for (const name of requiredColumns) columns[name] = headers.indexOf(name);
+      const missing = requiredColumns.filter(name => columns[name] < 0);
+      if (missing.length) throw new Error(`缺少必要列：${missing.join('、')}`);
+      return columns;
+    }
+
+    /* ========================================================================
+     *                    数据处理 & 结果展示
+     * ======================================================================== */
+
+    function createFoodContext(visitData) {
+      const visitCols = getFoodColumnMap(visitData, FOOD_VISIT_COLUMNS);
+      const recordMap = new Map();
+      const records = [];
+      const pointWarnings = new Set();
+      let filteredStatus = 0;
+      let filteredTask = 0;
+
+      for (let i = 1; i < visitData.length; i++) {
+        const row = visitData[i];
+        const status = getCell(row, visitCols['任务状态']);
+        if (status !== '待审批' && status !== '已完成') { filteredStatus++; continue; }
+        const auditType = getFoodAuditType(
+          getCell(row, visitCols['类型']),
+          getCell(row, visitCols['任务内容'])
+        );
+        if (!auditType) { filteredTask++; continue; }
+        const recordId = getCell(row, visitCols['巡店记录id']);
+        if (!recordId || recordMap.has(recordId)) continue;
+        const record = {
+          recordId,
+          auditType,
+          storeNo: getCell(row, visitCols['门店编号']),
+          storeName: getCell(row, visitCols['门店名称']),
+          grade: getCell(row, visitCols['巡店结果']),
+          evaluator: getCell(row, visitCols['巡店人']),
+          auditDuration: getAuditDurationMinutes(getCell(row, visitCols['巡店时长（实际）'])),
+          auditDate: formatFoodAuditDate(getCell(row, visitCols['签到日期'])),
+          points: createFoodPointValues(auditType),
+          pointRemarks: Array(FOOD_POINT_RULES.length).fill(''),
+          suggestions: [],
+          detailMatched: false
+        };
+        recordMap.set(recordId, record);
+        records.push(record);
+      }
+
+      return { source: 'patrol', recordMap, records, pointWarnings, filteredStatus, filteredTask };
+    }
+
+    function mergeFoodDetailData(context, detailData) {
+      const detailCols = getFoodColumnMap(detailData, FOOD_DETAIL_COLUMNS);
+      for (let i = 1; i < detailData.length; i++) {
+        const row = detailData[i];
+        const record = context.recordMap.get(getCell(row, detailCols['巡店记录id']));
+        if (!record) continue;
+        const category = normalizeFoodText(getCell(row, detailCols['所属分类']));
+        const checkName = getCell(row, detailCols['检查项名称']);
+        const remark = getCell(row, detailCols['备注']);
+        const detailAuditType = getFoodDetailAuditType(
+          getCell(row, detailCols['任务内容']),
+          category
+        );
+        if (detailAuditType && detailAuditType !== record.auditType) continue;
+
+        const suggestionText = normalizeFoodText([
+          category, checkName,
+          getCell(row, detailCols['统计维度']),
+          getCell(row, detailCols['检查结果'])
+        ].join(' '));
+        if (suggestionText.includes('建议')) {
+          record.detailMatched = true;
+          appendUnique(record.suggestions, remark);
+          continue;
+        }
+
+        const color = category.includes('食安红灯') ? 'red' : category.includes('食安黄灯') ? 'yellow' : '';
+        if (!color) continue;
+        record.detailMatched = true;
+        const pointIndex = getFoodPointIndex(record.auditType, color, checkName);
+        if (pointIndex < 0) {
+          context.pointWarnings.add(`${record.auditType === 'online' ? '线上' : '线下'}${color === 'red' ? '红灯' : '黄灯'}：${checkName}`);
+          continue;
+        }
+        const pointResult = normalizeFoodPointResult(
+          getCell(row, detailCols['巡店结果']),
+          getCell(row, detailCols['统计维度']),
+          getCell(row, detailCols['检查结果'])
+        );
+        record.points[pointIndex] = mergeFoodPointResult(record.points[pointIndex], pointResult);
+        if (remark) appendFoodRemark(record, pointIndex, remark);
+      }
+    }
+
+    function normalizeHikDateTime(value) {
+      return String(value || '').trim().replace(/[./]/g, '-').replace(/\s+/g, ' ');
+    }
+
+    function makeHikRecordKey(storeNo, auditTime, template) {
+      return [storeNo, normalizeHikDateTime(auditTime), template]
+        .map(value => String(value || '').trim()).join('\u0001');
+    }
+
+    function stripStoreNameSuffix(storeName) {
+      let name = String(storeName || '').trim();
+      let previous = '';
+      while (name !== previous) {
+        previous = name;
+        name = name.replace(/\s*[（(][^（）()]*[）)]\s*$/, '').trim();
+      }
+      return name;
+    }
+
+    function appendFoodRemark(record, index, value) {
+      const remark = String(value || '').trim();
+      if (!remark) return;
+      const remarks = record.pointRemarks;
+      if (!remarks[index]) remarks[index] = remark;
+      else if (!remarks[index].split('\n').includes(remark)) remarks[index] += `\n${remark}`;
+    }
+
+    function applyHikBrandMapping(context) {
+      for (const record of context.records) {
+        const cleanedName = stripStoreNameSuffix(record.storeName);
+        if (!BRAND_TEMPLATES.has(record.template)) {
+          record.storeName = cleanedName;
+          continue;
+        }
+        const mapping = brandStoreMap.get(makeBrandMapKey(record.storeNo, record.template));
+        if (mapping) {
+          record.storeNo = mapping.storeNo;
+          record.storeName = mapping.storeName;
+          context.brandMatched++;
+        } else {
+          context.brandUnmatched.add(`${record.storeNo}（${record.template}）`);
+          record.storeName = cleanedName;
+        }
+      }
+    }
+
+    function createHikFoodContext(summaryData) {
+      const columns = getFoodColumnMap(summaryData, HIK_SUMMARY_COLUMNS);
+      const recordMap = new Map();
+      const records = [];
+      let invalidSummaryRows = 0;
+
+      for (let i = 1; i < summaryData.length; i++) {
+        const row = summaryData[i];
+        const sourceStoreNo = getCell(row, columns['门店编号']);
+        const auditTime = getCell(row, columns['巡查时间']);
+        const template = getCell(row, columns['巡查模板']);
+        const key = makeHikRecordKey(sourceStoreNo, auditTime, template);
+        if (!sourceStoreNo || !auditTime || !template || recordMap.has(key)) {
+          invalidSummaryRows++;
+          continue;
+        }
+        const record = {
+          recordId: key,
+          sourceStoreNo,
+          auditTime,
+          template,
+          auditType: 'online',
+          storeNo: sourceStoreNo,
+          storeName: getCell(row, columns['门店名称']),
+          grade: getCell(row, columns['本次巡查分数']),
+          evaluator: getCell(row, columns['巡查人']),
+          auditDuration: getAuditDurationMinutes(getCell(row, columns['巡查时长'])),
+          auditDate: formatFoodAuditDate(auditTime),
+          points: createFoodPointValues('online', '合格'),
+          pointRemarks: Array(FOOD_POINT_RULES.length).fill(''),
+          suggestions: [],
+          detailMatched: true
+        };
+        recordMap.set(key, record);
+        records.push(record);
+      }
+
+      const context = {
+        source: 'hik', recordMap, records, pointWarnings: new Set(),
+        filteredStatus: 0, filteredTask: 0, invalidSummaryRows,
+        issueRows: 0, matchedIssueRows: 0, unmatchedIssueRows: 0,
+        brandMatched: 0, brandUnmatched: new Set()
+      };
+      return context;
+    }
+
+    function mergeHikIssueData(context, issueData) {
+      const columns = getFoodColumnMap(issueData, HIK_ISSUE_COLUMNS);
+      for (let i = 1; i < issueData.length; i++) {
+        const row = issueData[i];
+        context.issueRows++;
+        const key = makeHikRecordKey(
+          getCell(row, columns['门店编号']),
+          getCell(row, columns['巡查时间']),
+          getCell(row, columns['巡查模板'])
+        );
+        const record = context.recordMap.get(key);
+        if (!record) {
+          context.unmatchedIssueRows++;
+          continue;
+        }
+
+        const category = normalizeFoodText(getCell(row, columns['巡查大类']));
+        const patrolItem = getCell(row, columns['巡查项']);
+        const problemItem = getCell(row, columns['问题项']);
+        const remark = getCell(row, columns['巡查评语']);
+        const suggestionText = normalizeFoodText([category, patrolItem, problemItem].join(' '));
+        if (suggestionText.includes('建议')) {
+          appendUnique(record.suggestions, remark);
+          context.matchedIssueRows++;
+          continue;
+        }
+        const color = category.includes('食安红灯') ? 'red' : category.includes('食安黄灯') ? 'yellow' : '';
+        if (!color) continue;
+        const checkName = [patrolItem, problemItem].filter(Boolean).join(' ');
+        const pointIndex = getFoodPointIndex('online', color, checkName);
+        if (pointIndex < 0) {
+          context.pointWarnings.add(`${color === 'red' ? '红灯' : '黄灯'}：${checkName.slice(0, 80)}`);
+          continue;
+        }
+        record.points[pointIndex] = '不合格';
+        appendFoodRemark(record, pointIndex, remark);
+        context.matchedIssueRows++;
+      }
+      applyHikBrandMapping(context);
+    }
+
+    function calculateFoodPassRate(redResults, yellowResults) {
+      const isUnqualified = value => String(value || '').trim() === '不合格';
+      if (redResults.some(isUnqualified)) return '0%';
+      const yellowIssues = yellowResults.filter(isUnqualified).length;
+      return `${Math.max(0, 100 - yellowIssues * 10)}%`;
+    }
+
+    function calculateHikFoodGrade(redResults, yellowResults) {
+      const isUnqualified = value => String(value || '').trim() === '不合格';
+      if (redResults.some(isUnqualified)) return '不合格';
+      return yellowResults.filter(isUnqualified).length <= 1 ? '合格' : '不合格';
+    }
+
+    function buildFoodResults(context, sequenceOffset = 0) {
+      const { records, pointWarnings, filteredStatus, filteredTask } = context;
+      const contextStats = {
+        online: records.filter(r => r.auditType === 'online').length,
+        offline: records.filter(r => r.auditType === 'offline').length,
+        unmatched: context.source === 'hik'
+          ? context.unmatchedIssueRows
+          : records.filter(r => !r.detailMatched).length
+      };
+      if (context.source === 'hik') {
+        loggerFood.add(`云眸总分表读取完成：${records.length} 条有效记录${context.invalidSummaryRows ? `，跳过 ${context.invalidSummaryRows} 条无效或重复记录` : ''}`, 'info');
+        loggerFood.add(`云眸问题表读取完成：${context.issueRows} 条，匹配 ${context.matchedIssueRows} 条`, 'success');
+        if (context.unmatchedIssueRows) loggerFood.add(`有 ${context.unmatchedIssueRows} 条问题明细未关联到总分记录`, 'warning');
+        if (context.brandMatched) loggerFood.add(`品牌门店映射成功：${context.brandMatched} 条记录`, 'success');
+        if (context.brandUnmatched.size) loggerFood.add(`有 ${context.brandUnmatched.size} 个品牌门店未找到映射：${Array.from(context.brandUnmatched).join('；')}`, 'warning');
+      } else {
+        loggerFood.add(`巡店记录表筛选完成：保留 ${records.length} 条，过滤状态 ${filteredStatus} 条，过滤非食安任务 ${filteredTask} 条`, 'info');
+        loggerFood.add(`匹配完成：线上 ${contextStats.online} 条，线下 ${contextStats.offline} 条`, 'success');
+        if (contextStats.unmatched) loggerFood.add(`未匹配基础详情：${contextStats.unmatched} 条`, 'warning');
+      }
+      if (pointWarnings.size) loggerFood.add(`有 ${pointWarnings.size} 个检查项未识别：${Array.from(pointWarnings).join('；')}`, 'warning');
+
+      return records.map((record, index) => {
+        const redResults = getFoodPointValues(record, 'red');
+        const yellowResults = getFoodPointValues(record, 'yellow');
+        const output = {
+          序号: sequenceOffset + index + 1,
+          门店编号: record.storeNo,
+          门店名称: record.storeName,
+          稽核形式: record.auditType === 'online' ? '线上' : '线下',
+          成绩: context.source === 'hik'
+            ? calculateHikFoodGrade(redResults, yellowResults)
+            : (/^[-+]?(?:\d+\.?\d*|\.\d+)$/.test(record.grade) ? Number(record.grade) : record.grade),
+          各项合格率: calculateFoodPassRate(redResults, yellowResults),
+          评估人: record.evaluator,
+          '稽核用时/分': record.auditDuration,
+          稽核日期: record.auditDate
+        };
+        FOOD_POINT_RULES.forEach((rule, pointIndex) => {
+          output[rule.column] = record.points[pointIndex];
+          output[rule.remarkColumn] = record.pointRemarks[pointIndex];
+        });
+        output.建议项 = record.suggestions.join('\n');
+        return output;
+      });
+    }
+
+    document.getElementById('processBtnFood').addEventListener('click', async () => {
+      const files = smartUploadFood.getFiles();
+      const visitFiles = files.filter(f => f.type === 'visit');
+      const detailFiles = files.filter(f => f.type === 'detail');
+      const hikSummaryFiles = files.filter(f => f.type === 'hikSummary');
+      const hikIssueFiles = files.filter(f => f.type === 'hikIssue');
+      const hasPatrolFiles = visitFiles.length > 0 || detailFiles.length > 0;
+      const hasHikFiles = hikSummaryFiles.length > 0 || hikIssueFiles.length > 0;
+      const patrolReady = visitFiles.length === 1 && detailFiles.length > 0;
+      const hikReady = hikSummaryFiles.length === 1 && hikIssueFiles.length === 1;
+      if (hasPatrolFiles && !patrolReady) {
+        return alert('巡店数据需要1份巡店记录表和至少1份基础详情表');
+      }
+      if (hasHikFiles && !hikReady) {
+        return alert('海康云眸数据需要1份门店考评记录明细表和1份门店问题明细报表');
+      }
+      if (!patrolReady && !hikReady) return alert('请上传一套完整的食安数据文件');
+
+      const btn = document.getElementById('processBtnFood');
+      btn.disabled = true;
+      document.getElementById('loading').style.display = 'flex';
+      loggerFood.clear();
+      try {
+        const contexts = [];
+        if (patrolReady) {
+          const visitFile = visitFiles[0];
+          loggerFood.add(`读取巡店记录表：${visitFile.file.name}`, 'info');
+          const visitData = await readExcelFile(visitFile.file, FOOD_VISIT_COLUMNS);
+          const patrolContext = createFoodContext(visitData);
+          for (let i = 0; i < detailFiles.length; i++) {
+            const detailFile = detailFiles[i];
+            loggerFood.add(`读取基础详情表 ${i + 1}/${detailFiles.length}：${detailFile.file.name}`, 'info');
+            const detailData = await readExcelFile(detailFile.file, FOOD_DETAIL_COLUMNS);
+            mergeFoodDetailData(patrolContext, detailData);
+            await new Promise(resolve => setTimeout(resolve, 0));
+          }
+          contexts.push(patrolContext);
+        }
+        if (hikReady) {
+          const summaryFile = hikSummaryFiles[0];
+          const issueFile = hikIssueFiles[0];
+          loggerFood.add(`读取云眸门店总分表：${summaryFile.file.name}`, 'info');
+          const summaryData = await readExcelFile(summaryFile.file, HIK_SUMMARY_COLUMNS);
+          const hikContext = createHikFoodContext(summaryData);
+          loggerFood.add(`读取云眸问题明细表：${issueFile.file.name}`, 'info');
+          const issueData = await readExcelFile(issueFile.file, HIK_ISSUE_COLUMNS);
+          mergeHikIssueData(hikContext, issueData);
+          contexts.push(hikContext);
+        }
+
+        resultData = [];
+        let sequenceOffset = 0;
+        let unmatched = 0;
+        for (const context of contexts) {
+          const batch = buildFoodResults(context, sequenceOffset);
+          resultData.push(...batch);
+          sequenceOffset += batch.length;
+          unmatched += context.source === 'hik'
+            ? context.unmatchedIssueRows
+            : context.records.filter(record => !record.detailMatched).length;
+        }
+        foodStats = {
+          online: resultData.filter(row => row['稽核形式'] === '线上').length,
+          offline: resultData.filter(row => row['稽核形式'] === '线下').length,
+          unmatched
+        };
+        if (contexts.length > 1) loggerFood.add(`已合并两套来源：共 ${resultData.length} 条记录`, 'success');
+        document.getElementById('downloadBtnFood').disabled = resultData.length === 0;
+        displayFoodResults();
+        loggerFood.add(`处理完成：共 ${resultData.length} 条记录`, 'success');
+      } catch (err) {
+        loggerFood.add(`处理失败：${err.message}`, 'error');
+        alert('处理失败：' + err.message);
+      } finally {
+        btn.disabled = false;
+        document.getElementById('loading').style.display = 'none';
+      }
+    });
+
+    function displayFoodResults() {
+      const div = document.getElementById('resultFood');
+      if (!resultData.length) {
+        div.innerHTML = `<div class="result-empty"><div style="font-size:64px">📊</div><h3>无数据</h3></div>`;
+        return;
+      }
+      const failed = resultData.filter(r => r.成绩 === '不合格').length;
+      const escapeHtml = value => String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\n/g, '<br>');
+
+      div.innerHTML = `
+        <div class="stats">
+          <div class="stat-card"><h4>总记录数</h4><div class="number">${resultData.length}</div></div>
+          <div class="stat-card"><h4>线上记录</h4><div class="number">${foodStats.online}</div></div>
+          <div class="stat-card"><h4>线下记录</h4><div class="number">${foodStats.offline}</div></div>
+          <div class="stat-card"><h4>不合格记录</h4><div class="number">${failed}</div></div>
+        </div>
+        <div class="table-wrapper"><table>
+          <thead><tr>${FOOD_OUTPUT_COLUMNS.map(header => `<th>${header}</th>`).join('')}</tr></thead>
+          <tbody>${resultData.map(row => `<tr>${FOOD_OUTPUT_COLUMNS.map(header => `<td>${escapeHtml(row[header])}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div>`;
+    }
+
+    document.getElementById('downloadBtnFood').addEventListener('click', () => {
+      if (!resultData.length) return alert('没有可下载的数据');
+      const ws = XLSX.utils.json_to_sheet(resultData, { header: FOOD_OUTPUT_COLUMNS });
+      const twoDecimalColumns = ['成绩', '稽核用时/分'].map(header => FOOD_OUTPUT_COLUMNS.indexOf(header));
+      for (let row = 1; row <= resultData.length; row++) {
+        for (const column of twoDecimalColumns) {
+          const cell = ws[XLSX.utils.encode_cell({ r: row, c: column })];
+          if (cell && cell.t === 'n') cell.z = '0.00';
+        }
+      }
+      ws['!cols'] = FOOD_OUTPUT_COLUMNS.map((header, index) => ({
+        wch: index === 0 ? 8 : index < 9 ? 18 : index < 9 + FOOD_POINT_RULES.length ? 22 : 42
+      }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '食安成绩汇总');
+      XLSX.writeFile(wb, `食安成绩汇总_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.xlsx`);
+      loggerFood.add('Excel导出成功', 'success');
+    });
+
+    document.getElementById('clearBtnFood').addEventListener('click', () => {
+      smartUploadFood.clear();
+      resultData = [];
+      foodStats = { online: 0, offline: 0, unmatched: 0 };
+      document.getElementById('downloadBtnFood').disabled = true;
+      loggerFood.clear();
+      document.getElementById('resultFood').innerHTML = '<div class="result-empty"><div style="font-size:64px">📊</div><h3>等待处理</h3><p>请上传数据文件，然后点击"开始处理"</p></div>';
+    });
+  </script>
+</body>
+</html>
